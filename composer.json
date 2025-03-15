@@ -1,0 +1,8 @@
+{
+    "name": "medical-management/app",
+    "description": "Medical Management System",
+    "type": "project",
+    "require": {
+        "google/apiclient": "2.15.0"
+    }
+}
