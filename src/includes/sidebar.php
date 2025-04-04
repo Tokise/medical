@@ -13,6 +13,9 @@
                 <li class="<?php echo basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : ''; ?>">
                     <a href="../dashboard/index.php"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
+                <li class="<?php echo basename($_SERVER['PHP_SELF']) === 'appointment.php' ? 'active' : ''; ?>">
+                    <a href="../appointment/appointment.php"><i class="fas fa-clipboard-check"></i>Appointment</a>
+                </li>
                 <?php if (in_array('manage_users', $permissions)): ?>
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'users.php') !== false ? 'active' : ''; ?>">
                         <a href="../admin/users.php"><i class="fas fa-users"></i> Users</a>

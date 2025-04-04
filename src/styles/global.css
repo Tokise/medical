@@ -4,10 +4,11 @@
     --primary-color: #2563eb;
     --secondary-color: #3b82f6;
     --accent-color: #60a5fa;
-    --background-color: #f8fafc;
+    --background-color: #F3F4F6;
     --sidebar-color: #303b61;
     --text-primary: #1e293b;
     --text-secondary: #64748b;
+    --borderShadow: rgba(0, 0, 0, 0.127);
     --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
@@ -21,7 +22,11 @@ body {
 }
 
 /* Dashboard Layout */
-.dashboard-container {
+/* 
+    dashboard-container update: 
+    change to section tag for code reusability for different pages
+*/
+section{
     display: flex;
     min-height: 100vh;
     margin-left: 10px;
@@ -41,7 +46,6 @@ body {
     border-bottom-right-radius: 15px;
     margin-right: 1rem;
 }
-
 
 .menu {
     list-style: none;
@@ -90,7 +94,6 @@ hr{
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
     gap: 1rem;
-  
 }
 
 .stat-card {
@@ -239,14 +242,13 @@ hr{
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.084);
     z-index: 100;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-    border-radius: 15px;
 }
 
-.header-right {
+.header-right, .header-center {
     display: flex;
+    justify-content: flex-start;
     align-items: center;
     gap: 20px;
 }
@@ -485,18 +487,28 @@ hr{
 .header-search {
     display: flex;
     align-items: center;
-    background: #f1f5f9;
-    border-radius: 2rem;
-    padding: 0.5rem 1rem;
-    margin-left: 1rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--borderShadow);
+    border-radius: 8px;
+    width: 300px;
+
+    & > i{
+        color: var(--text-secondary);
+    }
+}
+
+.search-btn{
+    display: none;
+    padding: 8px;
+    border-radius: 50%;
 }
 
 .header-search input {
     border: none;
     background: none;
-    margin-left: 0.5rem;
     outline: none;
-    width: 200px;
+    width: 100%;
+    font-size: .90rem;
 }
 
 /* Notification Styles */
@@ -556,7 +568,7 @@ hr{
     gap: 12px;
 }
 
-.notification-item:hover {
+.notification-item:hover, .search-btn:hover{
     background-color: #f8fafc;
 }
 
@@ -807,6 +819,15 @@ hr{
     .menu-toggle {
         display: block;
     }
+
+    .header-left{
+        display: none;
+    }
+
+    .header-center{
+        width: 65%;
+        justify-content: space-between;
+    }
 }
 
 /* Updated Header Button Styles */
@@ -854,6 +875,15 @@ hr{
 @media (max-width: 1024px) {
     .action-buttons {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .header-search{
+        display: none;
+        width: 200px;
+    }
+
+    .search-btn{
+        display: block;
     }
 }
 

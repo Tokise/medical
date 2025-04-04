@@ -1,14 +1,20 @@
 <header class="dashboard-header">
     <div class="header-left">
+        <h3>Dashboard</h3>
+    </div>
+    <div class="header-center">
         <button class="menu-toggle">
             <i class="fas fa-bars"></i>
         </button>
         <div class="header-search">
+            <input type="text" placeholder="Search type of keywords">
             <i class="fas fa-search"></i>
-            <input type="text" placeholder="Search...">
         </div>
     </div>
     <div class="header-right">
+        <div class="search-btn">
+            <i class="fas fa-search fa-lg"></i>
+        </div>
         <div class="notifications">
             <button class="notification-btn" onclick="toggleNotifications()">
             <i class="fa-regular fa-bell"></i>
@@ -87,4 +93,11 @@ document.addEventListener('click', function(e) {
         document.querySelector('.user-dropdown').classList.remove('active');
     }
 });
+
+const btnSearch = document.querySelector('.search-btn');
+btnSearch.addEventListener('click', function(e){
+    document.querySelector('.header-search').style.display = "flex";
+    btnSearch.style.display = "none";
+});
+
 </script>

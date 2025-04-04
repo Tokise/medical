@@ -37,6 +37,7 @@ $stmt->bind_param("is", $_SESSION['user_id'], $role);
 $stmt->execute();
 $pending_tutorials = $stmt->get_result()->fetch_assoc()['pending_tutorials'];
 ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -51,8 +52,8 @@ $pending_tutorials = $stmt->get_result()->fetch_assoc()['pending_tutorials'];
 <body>
     <?php include_once('../includes/sidebar.php'); ?>
     <?php include_once('../includes/header.php'); ?>
-
-    <div class="dashboard-container" data-user-role="<?php echo htmlspecialchars($role); ?>">
+    <!--section for redability-->
+    <section data-user-role="<?php echo htmlspecialchars($role); ?>">
         <div class="content">
             <!-- Stats Cards Section -->
             <div class="stats-container">
@@ -111,7 +112,6 @@ $pending_tutorials = $stmt->get_result()->fetch_assoc()['pending_tutorials'];
                 <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
                 <div class="action-buttons">
                     <a href="../appointments/create.php" class="action-btn primary">
-                        <i class="fas fa-plus-circle"></i>
                         <span>New Appointment</span>
                     </a>
                     
@@ -191,7 +191,7 @@ $pending_tutorials = $stmt->get_result()->fetch_assoc()['pending_tutorials'];
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Initialize Charts Script -->
     <script>
