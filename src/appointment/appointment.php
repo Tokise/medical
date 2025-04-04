@@ -85,78 +85,9 @@ $pending_tutorials = $stmt->get_result()->fetch_assoc()['pending_tutorials'];
                             <div class="table-container">
                                 <table>
                                     <thead> <!--Sample Data-->
-                                        <tr>
-                                            <th>Status</th>
-                                            <th>Student Name</th>
-                                            <th>Appointment Date</th>
-                                            <th>Reason</th>
-                                            <th>Priority</th>
-                                            <th>Action</th>
-                                        </tr>
+                                       
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>Completed</td>
-                                            <td>Alex Cruz</td>
-                                            <td>March 1, 2025</td>
-                                            <td>Cough Fever</td>
-                                            <td>Medium</td>
-                                            <td>
-                                                <button>Action</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Completed</td>
-                                            <td>Mia Santos</td>
-                                            <td>March 4, 2025</td>
-                                            <td>Cough Fever</td>
-                                            <td>Low</td>
-                                            <td>
-                                                <button>Action</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                        <td>In Progress</td>
-                                            <td>Sam Reyes</td>
-                                            <td>March 12, 2025</td>
-                                            <td>Cough Fever</td>
-                                            <td>High</td>
-                                            <td>
-                                                <button>Action</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>In Progress</td>
-                                            <td>Liam Reyes</td>
-                                            <td>March 3, 2025</td>
-                                            <td>Cough Fever</td>
-                                            <td>Medium</td>
-                                            <td>
-                                                <button>Action</button>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>In Progress</td>
-                                            <td>Liam Reyes</td>
-                                            <td>March 3, 2025</td>
-                                            <td>Cough Fever</td>
-                                            <td>Medium</td>
-                                            <td>
-                                                <button>Action</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>In Progress</td>
-                                            <td>Liam Reyes</td>
-                                            <td>March 3, 2025</td>
-                                            <td>Cough Fever</td>
-                                            <td>Medium</td>
-                                            <td>
-                                                <button>Action</button>
-                                            </td>
-                                        </tr>
-                                       
                                         
                                     </tbody>
                                 </table>
@@ -165,19 +96,68 @@ $pending_tutorials = $stmt->get_result()->fetch_assoc()['pending_tutorials'];
                     </div>
                 </div>
                 <div class="patient-formdata">
-                    <div class="patient-name">
+                    <div class="patient-header">
                         <p>Alex Cruz</p>
-                        <p>In Progress</p>
+                        <label class="inProgress">In Progress</label>
                     </div>
                     <div class="patient-info">
-
+                        <div class="patient-data">
+                            <label>Date of Birth</label>
+                            <p>March 15, 2002</p>
+                        </div>
+                        <div class="patient-data">
+                            <label>Gender</label>
+                            <p>Male</p>
+                        </div>
+                        <div class="patient-data">
+                            <label>ID No.</label>
+                            <p>s230111174</p>
+                        </div>
+                        <div class="patient-data">
+                            <label>Indication</label>
+                            <p>Cough and fever</p>
+                        </div>
                     </div>
                     <div class="patient-health">
-                        <div>
-
-                        </div>
-                        <div>
+                        <div class="risk">
+                            <div class="patient-data">
+                                <label>Risk</label>
+                                <p>Moderate</p>
+                            </div>
+                            <div class="patient-data">
+                                <label>N&V</label>
+                                <p>NO</p>
+                            </div>
+                            <div class="patient-data">
+                                <label>Injury:</label>
+                                <p>No</p>
+                            </div>
+                            <div class="patient-data">
+                                <label>Progress</label>
+                                <p>Worsening</p>
+                            </div>
                             
+                        </div>
+                        <div class="symptoms">
+                            <div class="risk">
+                                <div class="patient-data">
+                                    <label>Symptoms</label>
+                                    <p>Persistent Cough</p>
+                                </div>
+                                <div class="patient-data">
+                                    <label>Chemicals</label>
+                                    <p>NO</p>
+                                </div>
+                                <div class="patient-data">
+                                    <label>Site:</label>
+                                    <p>Throat and Chest</p>
+                                </div>
+                                <div class="patient-data">
+                                    <label>Severity</label>
+                                    <p><label>6</label>/10</p>
+                                </div>
+                                
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -187,18 +167,112 @@ $pending_tutorials = $stmt->get_result()->fetch_assoc()['pending_tutorials'];
 </body>
 
 <script>
-    const tabs = document.querySelectorAll('.head-tab');
+    document.addEventListener("DOMContentLoaded", (event) => {
+        studentRquestTab();
+        document.querySelector('.page-title').innerText = "Appointment";
+    });
 
-    tabs.forEach(tab => {
+
+    const tabs = document.querySelectorAll('.head-tab');
+    tabs.forEach((tab, index) => {
         tab.addEventListener('click', (e) => {
             tabs.forEach(activeTab => {
                 if(activeTab.classList.contains('activeTab')){
-                activeTab.classList.remove('activeTab');
+                    activeTab.classList.remove('activeTab');
                 }
             }); 
             tab.classList.add('activeTab');
+
+            switch(index){
+                case 0: studentRquestTab()
+                    break;
+                case 1: tasksTab();
+                    break;
+            }
         })
     });
+
+    function studentRquestTab(){
+        let studentAppointmentData = [
+            {status: "Completed", name: "Alex Cruz", date:"March 1, 2025", reason:"Cough Fever", priority:"Medium"},
+            {status: "Completed", name: "Mia Santos", date:"	March 4, 2025", reason:"Cough Fever", priority:"Low"},
+            {status: "In Progress", name: "Sam Reyes", date:"March 12, 2025", reason:"Cough Fever", priority:"High"},
+            {status: "In Progress", name: "Liam Reyes", date:"March 3, 2025", reason:"Cough Fever", priority:"Medium"}
+        ];
+
+        const tHead = document.querySelector('thead');
+        tHead.innerHTML = `
+            <tr>
+                <th>Status</th>
+                <th>Student Name</th>
+                <th>Appointment Date</th>
+                <th>Reason</th>
+                <th>Priority</th>
+                <th>Action</th>
+            </tr>
+        `;
+
+        const tBody = document.querySelector('tbody');
+        tBody.innerHTML = ''; //clear table body
+        studentAppointmentData.forEach(student => {
+            const className = student.status == 'Completed' ? 'status-completed': 'inProgress';
+            const tr = `
+                <tr>
+                    <td>
+                        <label class=${className}>${student.status}</label>
+                    </td>
+                    <td>${student.name}</td>
+                    <td>${student.date}</td>
+                    <td>${student.reason}</td>
+                    <td>${student.priority}</td>
+                    <td>
+                        <button class="btnAction">Action</button>
+                    </td>
+                </tr>
+            `;
+            tBody.innerHTML += tr;
+            
+        });
+    }
+
+    function tasksTab(){
+        let tasks = [
+            {status: "In Progress", taskName: "Check Temperature", patientName: "Alex Cruz", assignedStaff:"March 1, 2025", lastUpdate:"Medium"},
+            {status: "Completed", taskName: "Give Medication", patientName: "Sam Reyes", assignedStaff:"	March 4, 2025", lastUpdate:"Low"},
+            {status: "In Progress", taskName: "Monitor for Nausea", patientName: "Mia Santos", assignedStaff:"March 12, 2025", lastUpdate:"High"},
+            {status: "Completed", taskName: "Record Visit", patientName: "Liam Reyes", assignedStaff:"March 3, 2025", lastUpdate:"Medium"}
+        ];
+
+        const tHead = document.querySelector('thead');
+        tHead.innerHTML = `
+            <tr>
+                <th>Task Status</th>
+                <th>Task Name</th>
+                <th>Name</th>
+                <th>Assigned Staff</th>
+                <th>Last Updated</th>
+            </tr>
+        `;
+
+        const tBody = document.querySelector('tbody');
+        tBody.innerHTML = ''; //clear table body
+        tasks.forEach(student => {
+            const className = student.status == 'Completed' ? 'status-completed': 'inProgress';
+            const tr = `
+                <tr>
+                     <td>
+                        <label class=${className}>${student.status}</label>
+                    </td>
+                    <td>${student.taskName}</td>
+                    <td>${student.patientName}</td>
+                    <td>${student.assignedStaff}</td>
+                    <td>${student.lastUpdate}</td>
+                </tr>
+            `;
+            tBody.innerHTML += tr;
+        });
+    }
+    
 </script>
 
 </html>

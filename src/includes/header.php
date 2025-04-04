@@ -1,6 +1,6 @@
 <header class="dashboard-header">
     <div class="header-left">
-        <h3>Dashboard</h3>
+        <h3 class="page-title">Dashboard</h3>
     </div>
     <div class="header-center">
         <button class="menu-toggle">
