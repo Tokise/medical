@@ -48,6 +48,10 @@ $logsQuery = "SELECT sl.*, u.username, u.first_name, u.last_name
              ORDER BY sl.created_at DESC LIMIT 10";
 $logs = $conn->query($logsQuery)->fetch_all(MYSQLI_ASSOC);
 
+// Get all roles for the user creation form
+$rolesQuery = "SELECT * FROM roles WHERE role_name IN ('Doctor', 'Nurse', 'Teacher', 'Student')";
+$roles = $conn->query($rolesQuery)->fetch_all(MYSQLI_ASSOC);
+
 // Pass the role to be used in the sidebar
 $role = 'Admin';
 ?>
@@ -85,21 +89,6 @@ $role = 'Admin';
             </div>
         </div>
 
-        <!-- Total Appointments Card -->
-        <div class="stat-card">
-            <div class="stat-header">
-                <span class="stat-title">Total Appointments</span>
-                <div class="stat-icon">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
-            </div>
-            <div class="stat-value">1,234</div>
-            <div class="stat-change positive">
-                <i class="fas fa-arrow-up"></i>
-                <span>23% this week</span>
-            </div>
-        </div>
-
         <!-- System Health Card -->
         <div class="stat-card">
             <div class="stat-header">
@@ -118,7 +107,7 @@ $role = 'Admin';
 
     <!-- Quick Actions Section -->
     <div class="quick-actions">
-        <div class="action-card">
+        <div class="action-card" id="addUserBtn">
             <div class="action-icon">
                 <i class="fas fa-user-plus"></i>
             </div>
@@ -157,47 +146,127 @@ $role = 'Admin';
             <h2 class="section-title">Recent Activity</h2>
         </div>
         <div class="activity-list">
-            <div class="activity-item">
-                <div class="activity-icon">
-                    <i class="fas fa-user-plus"></i>
+            <?php if (!empty($logs)): ?>
+                <?php foreach ($logs as $log): ?>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title"><?= htmlspecialchars($log['action']) ?> by <?= htmlspecialchars($log['first_name'] . ' ' . $log['last_name']) ?></div>
+                            <div class="activity-time"><?= date('M d, Y H:i', strtotime($log['created_at'])) ?></div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">No recent activity</div>
+                        <div class="activity-time">System is ready for use</div>
+                    </div>
                 </div>
-                <div class="activity-content">
-                    <div class="activity-title">New user registered</div>
-                    <div class="activity-time">2 minutes ago</div>
-                </div>
-            </div>
-
-            <div class="activity-item">
-                <div class="activity-icon">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
-                <div class="activity-content">
-                    <div class="activity-title">Appointment scheduled</div>
-                    <div class="activity-time">15 minutes ago</div>
-                </div>
-            </div>
-
-            <div class="activity-item">
-                <div class="activity-icon">
-                    <i class="fas fa-file-medical"></i>
-                </div>
-                <div class="activity-content">
-                    <div class="activity-title">Medical record updated</div>
-                    <div class="activity-time">1 hour ago</div>
-                </div>
-            </div>
-
-            <div class="activity-item">
-                <div class="activity-icon">
-                    <i class="fas fa-user-md"></i>
-                </div>
-                <div class="activity-content">
-                    <div class="activity-title">New staff member added</div>
-                    <div class="activity-time">2 hours ago</div>
-                </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
+
+<!-- Add User Modal -->
+<div class="modal" id="addUserModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Add New User</h2>
+            <button class="modal-close" id="closeModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addUserForm" action="../../controllers/user_controller.php" method="POST">
+                <input type="hidden" name="action" value="create_user">
+                
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="school_id">School ID</label>
+                    <input type="text" id="school_id" name="school_id" required placeholder="Enter student/teacher ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role_id">Role</label>
+                    <select id="role_id" name="role_id" required>
+                        <option value="">Select a role</option>
+                        <?php foreach ($roles as $role): ?>
+                            <option value="<?= $role['role_id'] ?>"><?= htmlspecialchars($role['role_name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('addUserModal');
+        const addUserBtn = document.getElementById('addUserBtn');
+        const closeModal = document.getElementById('closeModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        // Open modal
+        addUserBtn.addEventListener('click', function() {
+            modal.classList.add('active');
+        });
+        
+        // Close modal
+        function closeModalFunc() {
+            modal.classList.remove('active');
+        }
+        
+        closeModal.addEventListener('click', closeModalFunc);
+        cancelBtn.addEventListener('click', closeModalFunc);
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeModalFunc();
+            }
+        });
+        
+        // Form submission
+        const addUserForm = document.getElementById('addUserForm');
+        addUserForm.addEventListener('submit', function(event) {
+            // Form validation can be added here
+            // If validation passes, the form will submit to the controller
+        });
+    });
+</script>
 
 <?php require_once '../../../includes/footer.php'; ?>

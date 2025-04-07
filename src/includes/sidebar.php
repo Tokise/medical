@@ -82,7 +82,7 @@ if (isset($role)) {
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'appointment') !== false ? 'active' : '' ?>" 
-                           href="/medical/src/modules/appointment/index.php">
+                           href="/medical/src/modules/appointment/appointment.php">
                             <i class="fas fa-calendar-check"></i>
                             <span>Appointments</span>
                         </a>

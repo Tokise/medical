@@ -1,10 +1,11 @@
 <?php
 session_start();
-require_once '../../../config/db.php';
+require_once '../../../../config/db.php';
+require_once '../../../includes/header.php';
 
 // Check if user is logged in and has doctor role
 if (!isset($_SESSION['user_id']) || $_SESSION['role_name'] !== 'Doctor') {
-    header("Location: /MedMS/auth/login.php");
+    header("Location: /medical/auth/login.php");
     exit;
 }
 
@@ -16,28 +17,89 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
+// Get medical staff ID for the current doctor
+$staffQuery = "SELECT staff_id FROM medical_staff WHERE user_id = ?";
+$staffStmt = $conn->prepare($staffQuery);
+$staffStmt->bind_param("i", $user_id);
+$staffStmt->execute();
+$staffResult = $staffStmt->get_result();
+$staff = $staffResult->fetch_assoc();
+
+// Check if the doctor has a medical_staff record
+if (!$staff) {
+    // Create a medical_staff record for this doctor if it doesn't exist
+    $insertStaffQuery = "INSERT INTO medical_staff (user_id, specialization, license_number) VALUES (?, 'General Medicine', 'MD-" . rand(10000, 99999) . "')";
+    $insertStaffStmt = $conn->prepare($insertStaffQuery);
+    $insertStaffStmt->bind_param("i", $user_id);
+    
+    if ($insertStaffStmt->execute()) {
+        // Get the newly created staff_id
+        $staff_id = $conn->insert_id;
+    } else {
+        // If we can't create a medical_staff record, set a default value
+        $staff_id = 0;
+        $_SESSION['error'] = "Unable to create medical staff record. Some features may be limited.";
+    }
+} else {
+    $staff_id = $staff['staff_id'];
+}
+
 // Get counts for dashboard stats
 $totalPatientsQuery = "SELECT COUNT(*) as count FROM users u 
                       JOIN roles r ON u.role_id = r.role_id 
                       WHERE r.role_name IN ('Student', 'Teacher')";
 $totalPatients = $conn->query($totalPatientsQuery)->fetch_assoc()['count'];
 
-$totalPrescriptionsQuery = "SELECT COUNT(*) as count FROM prescriptions WHERE doctor_id = ?";
-$prescriptionStmt = $conn->prepare($totalPrescriptionsQuery);
-$prescriptionStmt->bind_param("i", $user_id);
-$prescriptionStmt->execute();
-$totalPrescriptions = $prescriptionStmt->get_result()->fetch_assoc()['count'];
+// Only query prescriptions if we have a valid staff_id
+$totalPrescriptions = 0;
+if ($staff_id > 0) {
+    $totalPrescriptionsQuery = "SELECT COUNT(*) as count FROM prescriptions WHERE staff_id = ?";
+    $prescriptionStmt = $conn->prepare($totalPrescriptionsQuery);
+    $prescriptionStmt->bind_param("i", $staff_id);
+    $prescriptionStmt->execute();
+    $totalPrescriptions = $prescriptionStmt->get_result()->fetch_assoc()['count'];
+}
+
+// Only query appointments if we have a valid staff_id
+$todayAppointments = 0;
+if ($staff_id > 0) {
+    $totalAppointmentsQuery = "SELECT COUNT(*) as count FROM consultations WHERE staff_id = ? AND DATE(consultation_date) = CURDATE()";
+    $appointmentStmt = $conn->prepare($totalAppointmentsQuery);
+    $appointmentStmt->bind_param("i", $staff_id);
+    $appointmentStmt->execute();
+    $todayAppointments = $appointmentStmt->get_result()->fetch_assoc()['count'];
+}
 
 // Get today's appointments
-$todayQuery = "SELECT a.*, u.first_name, u.last_name, u.school_id 
-              FROM appointments a
-              JOIN users u ON a.patient_id = u.user_id
-              WHERE a.doctor_id = ? AND DATE(a.appointment_date) = CURDATE()
-              ORDER BY a.appointment_date ASC";
-$todayStmt = $conn->prepare($todayQuery);
-$todayStmt->bind_param("i", $user_id);
-$todayStmt->execute();
-$todayAppointments = $todayStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$todayAppointmentsList = [];
+if ($staff_id > 0) {
+    $todayQuery = "SELECT c.*, u.first_name, u.last_name, u.school_id 
+                  FROM consultations c
+                  JOIN users u ON c.patient_id = u.user_id
+                  WHERE c.staff_id = ? AND DATE(c.consultation_date) = CURDATE()
+                  ORDER BY c.consultation_date ASC";
+    $todayStmt = $conn->prepare($todayQuery);
+    $todayStmt->bind_param("i", $staff_id);
+    $todayStmt->execute();
+    $todayAppointmentsList = $todayStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+// Get recent patients
+$recentPatients = [];
+if ($staff_id > 0) {
+    $recentPatientsQuery = "SELECT DISTINCT u.user_id, u.first_name, u.last_name, u.profile_image, u.email, 
+                           MAX(c.consultation_date) as last_visit
+                           FROM consultations c
+                           JOIN users u ON c.patient_id = u.user_id
+                           WHERE c.staff_id = ?
+                           GROUP BY u.user_id
+                           ORDER BY last_visit DESC
+                           LIMIT 5";
+    $recentPatientsStmt = $conn->prepare($recentPatientsQuery);
+    $recentPatientsStmt->bind_param("i", $staff_id);
+    $recentPatientsStmt->execute();
+    $recentPatients = $recentPatientsStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
 
 // Pass the role to be used in the sidebar
 $role = 'Doctor';
@@ -48,374 +110,156 @@ $role = 'Doctor';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Dashboard - MedMS</title>
-   
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Chart.js -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/MedMS/styles/variables.css">
-    <link rel="stylesheet" href="/MedMS/styles/dashboard.css">
-    <!-- Intro.js for guided tour -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/6.0.0/introjs.min.css">
+    <title>Doctor Dashboard - Medical Management System</title>
+    <link rel="stylesheet" href="styles/doctor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body class="dark-theme">
-    <?php include_once '../../../includes/header.php'; ?>
-    
-    <div class="container-fluid mt-4">
-        <div class="row">
-            <!-- Dashboard Content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2" data-intro="Welcome to your dashboard! This is where you can see an overview of your patient appointments.">Doctor Dashboard</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="startTutorial">
-                                <i class="fas fa-question-circle"></i> Help
-                            </button>
-                            <a href="/MedMS/src/modules/prescription/create.php" class="btn btn-sm btn-success">
-                                <i class="fas fa-prescription"></i> New Prescription
-                            </a>
-                        </div>
+<body>
+    <div class="doctor-dashboard">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <!-- Total Patients Card -->
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Patients</span>
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
                     </div>
                 </div>
-                
-                <!-- Welcome Section -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card welcome-card">
-                            <div class="card-body">
-                                <div class="row align-items-center">
-                                    <div class="col-auto">
-                                        <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'https://via.placeholder.com/150' ?>" class="rounded-circle doctor-profile-img" alt="Doctor Profile" width="80" height="80">
-                                    </div>
-                                    <div class="col">
-                                        <h4>Welcome, Dr. <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?></h4>
-                                        <p class="text-muted mb-0"><?= date('l, F j, Y') ?></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="stat-value"><?= $totalPatients ?></div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>All time</span>
+                </div>
+            </div>
+
+            <!-- Today's Appointments Card -->
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Today's Appointments</span>
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
                     </div>
                 </div>
-                
-                <!-- Stats Cards -->
-                <div class="row mb-4" data-intro="These cards show key statistics about your patients and activities">
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card stats-card total-patients">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h6 class="text-muted">Total Patients</h6>
-                                        <h3 class="fw-bold mt-2"><?= $totalPatients ?></h3>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-users fa-2x"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card stats-card total-appointments">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h6 class="text-muted">Today's Appointments</h6>
-                                        <h3 class="fw-bold mt-2"><?= count($todayAppointments) ?></h3>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-calendar-check fa-2x"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card stats-card total-prescriptions">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h6 class="text-muted">Total Prescriptions</h6>
-                                        <h3 class="fw-bold mt-2"><?= $totalPrescriptions ?></h3>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-prescription fa-2x"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card stats-card total-available">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h6 class="text-muted">Availability Status</h6>
-                                        <h3 class="fw-bold mt-2 text-success">Available</h3>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-check-circle fa-2x"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="stat-value"><?= $todayAppointments ?></div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Scheduled</span>
+                </div>
+            </div>
+
+            <!-- Prescriptions Card -->
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Prescriptions</span>
+                    <div class="stat-icon">
+                        <i class="fas fa-prescription-bottle-alt"></i>
                     </div>
                 </div>
-                
-                <!-- Today's Appointments -->
-                <div class="row mb-4" data-intro="Here you can see all your appointments for today">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <i class="fas fa-calendar-day me-1"></i>
-                                Today's Appointments (<?= count($todayAppointments) ?>)
-                            </div>
-                            <div class="card-body">
-                                <?php if (count($todayAppointments) > 0): ?>
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>Time</th>
-                                                    <th>Patient ID</th>
-                                                    <th>Patient Name</th>
-                                                    <th>Status</th>
-                                                    <th>Reason</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($todayAppointments as $appointment): ?>
-                                                    <tr>
-                                                        <td><?= date('h:i A', strtotime($appointment['appointment_date'])) ?></td>
-                                                        <td><?= htmlspecialchars($appointment['school_id']) ?></td>
-                                                        <td><?= htmlspecialchars($appointment['first_name'] . ' ' . $appointment['last_name']) ?></td>
-                                                        <td>
-                                                            <?php
-                                                            switch ($appointment['status']) {
-                                                                case 'scheduled':
-                                                                    echo '<span class="badge bg-primary">Scheduled</span>';
-                                                                    break;
-                                                                case 'completed':
-                                                                    echo '<span class="badge bg-success">Completed</span>';
-                                                                    break;
-                                                                case 'cancelled':
-                                                                    echo '<span class="badge bg-danger">Cancelled</span>';
-                                                                    break;
-                                                                case 'in-progress':
-                                                                    echo '<span class="badge bg-warning">In Progress</span>';
-                                                                    break;
-                                                                default:
-                                                                    echo '<span class="badge bg-secondary">Unknown</span>';
-                                                            }
-                                                            ?>
-                                                        </td>
-                                                        <td><?= htmlspecialchars($appointment['reason']) ?></td>
-                                                        <td>
-                                                            <a href="/MedMS/src/modules/consultation/view.php?id=<?= $appointment['appointment_id'] ?>" class="btn btn-sm btn-info">
-                                                                <i class="fas fa-eye"></i>
-                                                            </a>
-                                                            <a href="/MedMS/src/modules/consultation/start.php?id=<?= $appointment['appointment_id'] ?>" class="btn btn-sm btn-success">
-                                                                <i class="fas fa-stethoscope"></i>
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        You have no appointments scheduled for today.
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Patient Stats Chart -->
-                <div class="row mb-4" data-intro="This chart shows your patient statistics">
-                    <div class="col-xl-8 col-lg-7">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="fas fa-chart-bar me-1"></i>
-                                Patient Statistics
-                            </div>
-                            <div class="card-body">
-                                <canvas id="patientStatsChart" width="100%" height="40"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-xl-4 col-lg-5">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="fas fa-clipboard-list me-1"></i>
-                                Recent Activities
-                            </div>
-                            <div class="card-body">
-                                <ul class="timeline">
-                                    <li class="timeline-item">
-                                        <div class="timeline-marker"></div>
-                                        <div class="timeline-content">
-                                            <h5 class="timeline-title">Prescription created</h5>
-                                            <p class="timeline-text">For John Smith (ID: S12345)</p>
-                                            <p class="timeline-date">Today, 9:30 AM</p>
-                                        </div>
-                                    </li>
-                                    <li class="timeline-item">
-                                        <div class="timeline-marker"></div>
-                                        <div class="timeline-content">
-                                            <h5 class="timeline-title">Consultation completed</h5>
-                                            <p class="timeline-text">With Jane Doe (ID: S67890)</p>
-                                            <p class="timeline-date">Yesterday, 2:15 PM</p>
-                                        </div>
-                                    </li>
-                                    <li class="timeline-item">
-                                        <div class="timeline-marker"></div>
-                                        <div class="timeline-content">
-                                            <h5 class="timeline-title">New appointment</h5>
-                                            <p class="timeline-text">With Robert Brown (ID: T12345)</p>
-                                            <p class="timeline-date">May 15, 10:00 AM</p>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-    
-    <!-- Tutorial Modal -->
-    <div class="modal fade" id="tutorialModal" tabindex="-1" aria-labelledby="tutorialModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="tutorialModalLabel">Welcome to Doctor Dashboard</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h6>Welcome to the Doctor Dashboard</h6>
-                    <p>As a medical professional, you can:</p>
-                    <ul>
-                        <li>View your patient appointments</li>
-                        <li>Create and manage prescriptions</li>
-                        <li>Search for patients by school ID</li>
-                        <li>Record consultation notes</li>
-                        <li>Manage your availability schedule</li>
-                    </ul>
-                    <p>Would you like to take a quick tour of the system?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Skip Tour</button>
-                    <button type="button" class="btn btn-primary" id="startTutorialFromModal">Start Tour</button>
+                <div class="stat-value"><?= $totalPrescriptions ?></div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>All time</span>
                 </div>
             </div>
         </div>
+
+        <!-- Today's Appointments Section -->
+        <div class="appointments-section">
+            <div class="section-header">
+                <h2 class="section-title">Today's Appointments</h2>
+                <a href="../appointments/schedule.php" class="btn btn-primary">Schedule New</a>
+            </div>
+            <div class="appointments-list">
+                <?php if (!empty($todayAppointmentsList)): ?>
+                    <?php foreach ($todayAppointmentsList as $appointment): ?>
+                        <div class="appointment-item">
+                            <div class="appointment-time">
+                                <?= date('h:i A', strtotime($appointment['consultation_date'])) ?>
+                            </div>
+                            <div class="appointment-content">
+                                <div class="appointment-title"><?= htmlspecialchars($appointment['first_name'] . ' ' . $appointment['last_name']) ?></div>
+                                <div class="appointment-patient">ID: <?= htmlspecialchars($appointment['school_id']) ?></div>
+                            </div>
+                            <div class="appointment-status <?= strtolower($appointment['status']) ?>"><?= $appointment['status'] ?></div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="appointment-item">
+                        <div class="appointment-content">
+                            <div class="appointment-title">No appointments scheduled for today</div>
+                            <div class="appointment-patient">Schedule a new appointment to get started</div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Recent Patients Section -->
+        <div class="patients-section">
+            <div class="section-header">
+                <h2 class="section-title">Recent Patients</h2>
+                <a href="../patients/index.php" class="btn btn-primary">View All</a>
+            </div>
+            <div class="patients-list">
+                <?php if (!empty($recentPatients)): ?>
+                    <?php foreach ($recentPatients as $patient): ?>
+                        <div class="patient-item">
+                            <img class="patient-avatar" src="<?= $patient['profile_image'] ?? 'https://via.placeholder.com/150' ?>" alt="Patient">
+                            <div class="patient-content">
+                                <div class="patient-name"><?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?></div>
+                                <div class="patient-info">Last visit: <?= date('M d, Y', strtotime($patient['last_visit'])) ?></div>
+                            </div>
+                            <a href="../patients/view.php?id=<?= $patient['user_id'] ?>" class="patient-action">View</a>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="patient-item">
+                        <div class="patient-content">
+                            <div class="patient-name">No recent patients</div>
+                            <div class="patient-info">Start seeing patients to build your list</div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="quick-actions">
+            <div class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <h3 class="action-title">Schedule Appointment</h3>
+                <p class="action-description">Book a new consultation</p>
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <h3 class="action-title">Patient Records</h3>
+                <p class="action-description">Access medical histories</p>
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-prescription-bottle-alt"></i>
+                </div>
+                <h3 class="action-title">Prescriptions</h3>
+                <p class="action-description">Manage medications</p>
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="action-title">Reports</h3>
+                <p class="action-description">View analytics & reports</p>
+            </div>
+        </div>
     </div>
-    
-    <?php include_once '../../../includes/footer.php'; ?>
-    
-    <!-- Custom JS for Charts -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize charts
-        // Patient Stats Chart
-        var patientStatsCtx = document.getElementById('patientStatsChart').getContext('2d');
-        var patientStatsChart = new Chart(patientStatsCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Appointments',
-                    data: [12, 19, 14, 15, 10, 7],
-                    backgroundColor: 'rgba(74, 222, 128, 0.5)',
-                    borderColor: 'rgba(74, 222, 128, 1)',
-                    borderWidth: 2
-                }, {
-                    label: 'Prescriptions',
-                    data: [8, 12, 9, 10, 7, 4],
-                    backgroundColor: 'rgba(96, 165, 250, 0.5)',
-                    borderColor: 'rgba(96, 165, 250, 1)',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    },
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-        
-        // Display the tutorial modal if it's the user's first login
-        <?php if (isset($_SESSION['show_tutorial']) && $_SESSION['show_tutorial']): ?>
-            var tutorialModal = new bootstrap.Modal(document.getElementById('tutorialModal'));
-            tutorialModal.show();
-            <?php $_SESSION['show_tutorial'] = false; ?>
-        <?php endif; ?>
-    });
 
-    function startDoctorDashboardTour() {
-        const existingOverlay = document.querySelector('.introjs-overlay');
-        if (existingOverlay) existingOverlay.remove();
-
-        introJs().setOptions({
-            steps: [
-                {
-                    title: 'Doctor Dashboard',
-                    intro: 'Welcome to your Medical Practice Portal! Let\'s explore your tools and features.',
-                    position: 'center'
-                },
-                {
-                    element: '.welcome-card',
-                    intro: 'Your profile and today\'s overview.',
-                    position: 'bottom'
-                },
-                {
-                    element: '.stats-card',
-                    intro: 'Quick statistics about your patients and appointments.',
-                    position: 'bottom'
-                },
-                {
-                    element: '.appointments-section',
-                    intro: 'Manage your daily appointments and consultations.',
-                    position: 'left'
-                },
-                {
-                    element: '.patient-stats',
-                    intro: 'View patient statistics and treatment progress.',
-                    position: 'right'
-                }
-            ],
-            showProgress: true,
-            showBullets: true,
-            exitOnOverlayClick: false,
-            exitOnEsc: false,
-            doneLabel: 'Finish Tour',
-            tooltipClass: 'customTooltip',
-            overlayOpacity: 0.7,
-            scrollToElement: true,
-            highlightClass: 'introjs-custom-highlight'
-        }).start();
-    }
-    </script>
+    <?php require_once '../../../includes/footer.php'; ?>
 </body>
 </html>
