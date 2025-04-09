@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../../../config/db.php';
+require_once '../../../../config/db.php';
 
 // Check if user is logged in and has nurse role
 if (!isset($_SESSION['user_id']) || $_SESSION['role_name'] !== 'Nurse') {
@@ -54,7 +54,8 @@ $role = 'Nurse';
     <title>Nurse Dashboard - MedMS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/MedMS/styles/variables.css">
-    <link rel="stylesheet" href="/MedMS/styles/dashboard.css">
+    <link rel="stylesheet" href="styles/nurse.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <?php include_once '../../../includes/header.php'; ?>
@@ -213,29 +214,29 @@ $role = 'Nurse';
                 <div class="grid-col-4">
                     <!-- Inventory Alerts -->
                     <div class="card mb-4">
-                        <div class="card-header">
-                            <i class="fas fa-exclamation-triangle me-1"></i>
-                            Inventory Alerts
+                        <div class="card-header d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span>Inventory Alerts</span>
                         </div>
                         <div class="card-body">
                             <?php if (count($inventoryAlerts) > 0): ?>
-                                <ul class="list-group">
+                                <ul class="list-group list-group-flush">
                                     <?php foreach ($inventoryAlerts as $item): ?>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
                                             <div>
-                                                <span class="fw-bold"><?= htmlspecialchars($item['item_name']) ?></span>
-                                                <div class="text-muted">
-                                                    Stock: <span class="text-danger"><?= $item['current_quantity'] ?></span> / <?= $item['reorder_level'] ?>
+                                                <span class="fw-bold text-dark"><?= htmlspecialchars($item['item_name']) ?></span>
+                                                <div class="text-muted small mt-1">
+                                                    Stock: <span class="text-danger fw-medium"><?= $item['current_quantity'] ?></span> / <?= $item['reorder_level'] ?>
                                                 </div>
                                             </div>
                                             <a href="/MedMS/src/modules/inventory/update.php?id=<?= $item['item_id'] ?>" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-plus"></i> Restock
+                                                <i class="fas fa-plus me-1"></i> Restock
                                             </a>
                                         </li>
                                     <?php endforeach; ?>
                                 </ul>
                             <?php else: ?>
-                                <div class="alert alert-success">
+                                <div class="alert alert-success mb-0">
                                     <i class="fas fa-check-circle me-2"></i>
                                     All inventory items are adequately stocked.
                                 </div>
@@ -244,27 +245,27 @@ $role = 'Nurse';
                     </div>
                     
                     <!-- Quick Actions -->
-                    <div class="card">
-                        <div class="card-header">
-                            <i class="fas fa-tasks me-1"></i>
-                            Quick Actions
+                    <div class="card mt-4">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="fas fa-tasks me-2"></i>
+                            <span>Quick Actions</span>
                         </div>
-                        <div class="card-body">
-                            <div class="list-group">
-                                <a href="/MedMS/src/modules/clinic_visit/create.php" class="list-group-item list-group-item-action">
-                                    <i class="fas fa-plus-circle me-2"></i> Record New Visit
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <a href="/MedMS/src/modules/clinic_visit/create.php" class="list-group-item list-group-item-action py-3">
+                                    <i class="fas fa-plus-circle me-2 text-success"></i> Record New Visit
                                 </a>
-                                <a href="/MedMS/src/modules/health_record/search.php" class="list-group-item list-group-item-action">
-                                    <i class="fas fa-search me-2"></i> Search Health Records
+                                <a href="/MedMS/src/modules/health_record/search.php" class="list-group-item list-group-item-action py-3">
+                                    <i class="fas fa-search me-2 text-primary"></i> Search Health Records
                                 </a>
-                                <a href="/MedMS/src/modules/medical_notes/create.php" class="list-group-item list-group-item-action">
-                                    <i class="fas fa-notes-medical me-2"></i> Add Medical Notes
+                                <a href="/MedMS/src/modules/medical_notes/create.php" class="list-group-item list-group-item-action py-3">
+                                    <i class="fas fa-notes-medical me-2 text-info"></i> Add Medical Notes
                                 </a>
-                                <a href="/MedMS/src/modules/inventory/index.php" class="list-group-item list-group-item-action">
-                                    <i class="fas fa-boxes me-2"></i> Manage Inventory
+                                <a href="/MedMS/src/modules/inventory/index.php" class="list-group-item list-group-item-action py-3">
+                                    <i class="fas fa-boxes me-2 text-warning"></i> Manage Inventory
                                 </a>
-                                <a href="/MedMS/src/modules/reports/daily.php" class="list-group-item list-group-item-action">
-                                    <i class="fas fa-chart-line me-2"></i> Generate Daily Report
+                                <a href="/MedMS/src/modules/reports/daily.php" class="list-group-item list-group-item-action py-3">
+                                    <i class="fas fa-chart-line me-2 text-secondary"></i> Generate Daily Report
                                 </a>
                             </div>
                         </div>
@@ -282,7 +283,9 @@ $role = 'Nurse';
                             Weekly Visit Statistics
                         </div>
                         <div class="card-body">
-                            <canvas id="visitsStatsChart" width="100%" height="40"></canvas>
+                            <div class="chart-container">
+                                <canvas id="visitsStatsChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -328,41 +331,13 @@ $role = 'Nurse';
         </main>
     </div>
     
-    <!-- Tutorial Modal -->
-    <div class="modal fade" id="tutorialModal" tabindex="-1" aria-labelledby="tutorialModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="tutorialModalLabel">Welcome to Nurse Dashboard</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h6>Welcome to the Nurse Dashboard</h6>
-                    <p>As a healthcare provider, you can:</p>
-                    <ul>
-                        <li>Record and manage clinic visits</li>
-                        <li>Track inventory and medical supplies</li>
-                        <li>Access patient health records</li>
-                        <li>Generate daily and weekly reports</li>
-                        <li>Manage medication distribution</li>
-                    </ul>
-                    <p>Would you like to take a quick tour of the system?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Skip Tour</button>
-                    <button type="button" class="btn btn-primary" id="startTutorialFromModal">Start Tour</button>
-                </div>
-            </div>
-        </div>
-    </div>
+
     
     <?php include_once '../../../includes/footer.php'; ?>
     
     <!-- Custom JS for Charts -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize charts
-        // Visit Stats Chart
         var visitsStatsCtx = document.getElementById('visitsStatsChart').getContext('2d');
         var visitsStatsChart = new Chart(visitsStatsCtx, {
             type: 'line',
@@ -371,16 +346,16 @@ $role = 'Nurse';
                 datasets: [{
                     label: 'Clinic Visits',
                     data: [15, 12, 18, 14, 20, 8, 5],
-                    backgroundColor: 'rgba(74, 222, 128, 0.2)',
-                    borderColor: 'rgba(74, 222, 128, 1)',
+                    backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                    borderColor: 'rgb(14, 165, 233)',
                     borderWidth: 2,
                     tension: 0.4,
                     fill: true
                 }, {
                     label: 'Referred Cases',
                     data: [3, 5, 4, 2, 6, 1, 0],
-                    backgroundColor: 'rgba(251, 146, 60, 0.2)',
-                    borderColor: 'rgba(251, 146, 60, 1)',
+                    backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                    borderColor: 'rgb(234, 179, 8)',
                     borderWidth: 2,
                     tension: 0.4,
                     fill: true
@@ -389,72 +364,72 @@ $role = 'Nurse';
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
                 scales: {
                     x: {
                         grid: {
                             display: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11
+                            }
                         }
                     },
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 5
+                            stepSize: 5,
+                            color: '#94a3b8',
+                            font: {
+                                size: 11
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)'
                         }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            boxWidth: 12,
+                            color: '#e2e8f0',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        padding: 12,
+                        titleColor: '#f8fafc',
+                        bodyColor: '#e2e8f0',
+                        titleFont: {
+                            size: 13,
+                            weight: '600'
+                        },
+                        bodyFont: {
+                            size: 12
+                        },
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        displayColors: true,
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        boxPadding: 4,
+                        usePointStyle: true
                     }
                 }
             }
         });
-        
-        // Display the tutorial modal if it's the user's first login
-        <?php if (isset($_SESSION['show_tutorial']) && $_SESSION['show_tutorial']): ?>
-            var tutorialModal = new bootstrap.Modal(document.getElementById('tutorialModal'));
-            tutorialModal.show();
-            <?php $_SESSION['show_tutorial'] = false; ?>
-        <?php endif; ?>
     });
-
-    function startNurseDashboardTour() {
-        const existingOverlay = document.querySelector('.introjs-overlay');
-        if (existingOverlay) existingOverlay.remove();
-
-        introJs().setOptions({
-            steps: [
-                {
-                    title: 'Nurse Dashboard',
-                    intro: 'Welcome to your Clinical Care Portal! Let\'s explore your nursing tools.',
-                    position: 'center'
-                },
-                {
-                    element: '.stats-card',
-                    intro: 'Monitor daily visits and patient statistics.',
-                    position: 'bottom'
-                },
-                {
-                    element: '.inventory-alerts',
-                    intro: 'Keep track of medical supplies and inventory.',
-                    position: 'right'
-                },
-                {
-                    element: '.clinic-visits',
-                    intro: 'Manage patient visits and basic care.',
-                    position: 'left'
-                },
-                {
-                    element: '.quick-actions',
-                    intro: 'Access common nursing tasks and records.',
-                    position: 'bottom'
-                }
-            ],
-            showProgress: true,
-            showBullets: true,
-            exitOnOverlayClick: false,
-            exitOnEsc: false,
-            doneLabel: 'Finish Tour',
-            tooltipClass: 'customTooltip',
-            overlayOpacity: 0.7,
-            scrollToElement: true
-        }).start();
-    }
     </script>
 </body>
 </html>

@@ -82,7 +82,7 @@ $role = 'Admin';
                     <i class="fas fa-user-md"></i>
                 </div>
             </div>
-            <div class="stat-value"><?= $totalDoctors ?></div>
+            <div class="stat-value"><?= $totalDoctors + $totalNurses ?></div>
             <div class="stat-change positive">
                 <i class="fas fa-arrow-up"></i>
                 <span>4 new this week</span>

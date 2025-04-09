@@ -16,7 +16,13 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
+}
+
+.filter span {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .header-actions{
@@ -24,35 +30,56 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: 1.5rem;
 }
 
 .patient-search{
     display: flex;
     justify-content: space-between;
-    background-color: #FFFF;
-    padding: .8rem 1.5rem;
-    border-radius: 8px;
-    width: 220px;
+    align-items: center;
+    background: var(--bg-primary);
+    padding: .8rem 1.2rem;
+    border-radius: var(--rounded-md);
+    width: 280px;
+    border: 1px solid var(--border-primary);
+    transition: all 0.3s ease;
     
     & > input{
         border: none;
         background: none;
         outline: none;
-        font-size: .90rem;
+        font-size: .95rem;
+        color: var(--text-primary);
+        width: 100%;
+    }
+
+    & > input::placeholder {
+        color: var(--text-muted);
     }
 
     & > i{
-        color: var(--text-secondary);
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-left: 0.5rem;
+    }
+
+    &:hover {
+        border-color: var(--accent-primary);
+        box-shadow: var(--shadow-sm);
     }
 }
 
+.patient-search:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.1);
+}
+
 .selected-filter{
-    background-color: #c0eaf8;
+    background-color: rgba(129, 140, 248, 0.1);
     padding: 5px 12px;
     border-radius: 14px;
-    color: #187897;
+    color: var(--accent-primary);
     font-weight: 600;
-
 }
 
 .tables{
@@ -67,19 +94,21 @@
 .pending-patient{
     font-size: 14px;
     border-radius: 12px;
-    color: #ce0606;
+    color: var(--accent-danger);
     padding: 2px 8px;
     margin: auto;
-    background-color: #F5CDCD;
+    background-color: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.1);
 }
 
 .pending-task{
     font-size: 14px;
     border-radius: 12px;
-    color: #ffffffb9;
+    color: var(--text-secondary);
     padding: 2px 8px;
     margin: auto;
-    background-color: #666666;
+    background-color: rgba(100, 116, 139, 0.05);
+    border: 1px solid rgba(100, 116, 139, 0.1);
 }
 
 .head-tab{
@@ -87,17 +116,20 @@
     padding: .4rem 1.8rem;
     margin-right: -16px;
     text-align: center;
-    background-color: #e0e2e2;
+    background: var(--bg-secondary);
     font-weight: 500;
-    color: #666666;
+    color: var(--text-secondary);
     display: flex;
     flex-direction: row;
     gap: 1rem;
     cursor: pointer;
     position: relative;
+    border: 1px solid var(--border-primary);
+    border-bottom: none;
+    transition: all 0.3s ease;
 
-    & > p{
-        margin: 0;
+    &:hover {
+        background: var(--bg-primary);
     }
 }
 
@@ -115,16 +147,20 @@
 
 .activeTab{
     z-index: 3 !important;
-    background-color: white;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-bottom: none;
 }
 
 .tab-content{
     border-radius: 0px 8px 8px 8px;
     padding: 1.5rem;
-    background-color: #FFFF;
+    background: var(--bg-primary);
     max-height: 500px;
     overflow: auto;
     height: 100%;
+    border: 1px solid var(--border-primary);
+    box-shadow: var(--shadow-sm);
 }
 
 table{
@@ -143,7 +179,15 @@ td, th{
 }
 
 tr{
-    border-bottom: 1px solid var(--borderShadow);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+tr:hover {
+    background: var(--bg-secondary);
+}
+
+tr:last-child {
+    border-bottom: none;
 }
 
 span{
@@ -155,9 +199,10 @@ span{
     width: 22%;
     height: 450px;
     padding: 1.5rem;
-    border-radius: 14px;
-    background-color: #FFFF; 
-    
+    border-radius: var(--rounded-lg);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    box-shadow: var(--shadow-sm);
 }
 
 .patient-header{
@@ -169,33 +214,45 @@ span{
     & > p {
         margin: 0;
         font-size: 22px;
+        color: var(--text-primary);
     }
 }
 
 .inProgress{
-    background-color: #e1d89165;
-    color: #ff9500;
+    background-color: rgba(234, 179, 8, 0.05);
+    border: 1px solid rgba(234, 179, 8, 0.1);
+    color: var(--accent-warning);
     font-size: 14px;
     padding: 4px 12px;
     border-radius: 14px;
 }
 
 .status-completed{
-    background-color: #d0edce;
-    color: #15a209;
+    background-color: rgba(34, 197, 94, 0.05);
+    border: 1px solid rgba(34, 197, 94, 0.1);
+    color: var(--accent-success);
     font-size: 14px;
     padding: 4px 12px;
     border-radius: 14px;
 }
 
 .btnAction{
-    background-color: #492de7;
+    background: var(--gradient-text-logo);
     border: none;
-    color: #FFFF;
-    font-weight: 600;
+    color: white;
+    font-weight: 500;
     font-size: 14px;
-    padding: 4px 12px;
-    border-radius: 14px;
+    padding: 6px 16px;
+    border-radius: var(--rounded-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.btnAction:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    opacity: 0.95;
 }
 
 .patient-info{
@@ -211,15 +268,29 @@ span{
 }
 
 .patient-data{
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: var(--rounded-md);
+    border: 1px solid var(--border-primary);
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
     & > p{
         font-size: 15px;
         margin: 0;
+        color: var(--text-primary);
     }
 
     & > label{
         font-weight: 600;
         font-size: 13px;
         color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+        display: block;
     }
 }
 
@@ -234,4 +305,55 @@ span{
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+section {
+    margin-left: 250px; /* Match sidebar width */
+    min-height: calc(100vh - 4rem);
+    background: var(--gradient-bg-main);
+
+}
+
+.content {
+    padding: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    section {
+        margin-left: 0;
+        margin-top: 60px;
+    }
+
+    .content {
+        padding: 1rem;
+    }
+
+    .main-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .list-patient {
+        width: 100%;
+    }
+
+    .patient-formdata {
+        width: 100%;
+        height: auto;
+    }
+
+    .filter {
+        flex-wrap: wrap;
+    }
+
+    .patient-search {
+        width: 100%;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
 }

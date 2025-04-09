@@ -7,7 +7,7 @@
     margin-left: 250px; /* Match sidebar width */
     min-height: calc(100vh - 4rem);
     background: var(--gradient-bg-main);
-    margin-top: 60px;
+
 }
 
 /* Stats Cards Container */
@@ -91,7 +91,16 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1.5rem;
+
 }
+.section-header a {
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
 
 .section-title {
     font-size: 1.25rem;

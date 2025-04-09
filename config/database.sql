@@ -255,6 +255,30 @@ INSERT INTO roles (role_name, description) VALUES
 ('Teacher', 'School faculty member'),
 ('Student', 'Enrolled student');
 
+-- Insert sample users (admin, doctor, and nurse)
+INSERT INTO users (role_id, school_id, username, password, email, first_name, last_name, is_active) VALUES
+(1, 'ADMIN001', 'admin', '$2y$10$xJ3Lpj8UGDjwwwJEINeOh.QqUwr1nr7KFjkRKGkgQh7aBG0hYvxVS', 'admin@medms.edu', 'System', 'Administrator', 1),
+(2, 'DOC001', 'doctor', '$2y$10$xJ3Lpj8UGDjwwwJEINeOh.QqUwr1nr7KFjkRKGkgQh7aBG0hYvxVS', 'doctor@medms.edu', 'John', 'Smith', 1),
+(3, 'NUR001', 'nurse', '$2y$10$xJ3Lpj8UGDjwwwJEINeOh.QqUwr1nr7KFjkRKGkgQh7aBG0hYvxVS', 'nurse@medms.edu', 'Sarah', 'Johnson', 1);
+
+-- Insert medical staff records
+INSERT INTO medical_staff (user_id, specialization, license_number, availability_status) VALUES
+(2, 'General Medicine', 'MD12345', 'Available'),
+(3, 'General Nursing', 'RN12345', 'Available');
+
+-- Insert sample schedules for medical staff
+INSERT INTO medical_staff_schedule (staff_id, day_of_week, start_time, end_time) VALUES
+(1, 'Monday', '08:00:00', '17:00:00'),
+(1, 'Tuesday', '08:00:00', '17:00:00'),
+(1, 'Wednesday', '08:00:00', '17:00:00'),
+(1, 'Thursday', '08:00:00', '17:00:00'),
+(1, 'Friday', '08:00:00', '17:00:00'),
+(2, 'Monday', '08:00:00', '17:00:00'),
+(2, 'Tuesday', '08:00:00', '17:00:00'),
+(2, 'Wednesday', '08:00:00', '17:00:00'),
+(2, 'Thursday', '08:00:00', '17:00:00'),
+(2, 'Friday', '08:00:00', '17:00:00');
+
 -- Insert sample medical supplies
 INSERT INTO medical_supplies (item_name, description, current_quantity, unit, reorder_level, supplier, unit_cost) VALUES 
 ('Bandages', 'Sterile adhesive bandages', 100, 'pieces', 50, 'Medical Supplies Co.', 0.50),

@@ -7,7 +7,7 @@
     margin-left: 250px; /* Match sidebar width */
     min-height: calc(100vh - 4rem);
     background: var(--gradient-bg-main);
-    margin-top: 60px;
+
 }
 
 /* Stats Cards Container */
@@ -215,8 +215,8 @@
 .modal-content {
     background: var(--bg-secondary);
     border-radius: var(--rounded-lg);
-    width: 90%;
-    max-width: 600px;
+    width: 80%;
+    max-width: 400px;
     box-shadow: var(--shadow-lg);
     animation: modalFadeIn 0.3s ease;
 }
@@ -236,15 +236,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.5rem;
+    padding: 1rem;
     border-bottom: 1px solid var(--border-primary);
 }
 
 .modal-title {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
+  
 }
 
 .modal-close {
@@ -261,11 +262,11 @@
 }
 
 .modal-body {
-    padding: 1.5rem;
+    padding: 1rem;
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .form-group label {
@@ -278,7 +279,7 @@
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--border-primary);
     border-radius: var(--rounded-md);
     background: var(--bg-primary);
@@ -296,7 +297,7 @@
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-    margin-top: 2rem;
+    margin-top: 1.5rem;
 }
 
 .btn {
@@ -344,5 +345,6 @@
     
     .modal-content {
         width: 95%;
+        max-width: 300px;
     }
 }

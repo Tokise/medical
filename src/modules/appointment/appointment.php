@@ -79,13 +79,13 @@ $role = $user['role_name'];
                     <div class="header-actions">
                         <div class="filter">
                             <div class="patient-search">
-                                <input type="text" placeholder="Search"/>
-                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Search appointments..." aria-label="Search appointments"/>
+                                <i class="fas fa-search" aria-hidden="true"></i>
                             </div>
                             <span>Filter</span>
                             <span class="selected-filter">
                                 Status: Actionable
-                                <i class="fas fa-times"></i>
+                                <i class="fas fa-times" aria-hidden="true"></i>
                             </span>
                         </div>
                         <span class="update">Last updated: <?= date('F d, Y h:i A') ?></span>

@@ -10,7 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
         themeIcon.classList.replace('fa-moon', 'fa-sun');
     }
     
-    themeToggle.addEventListener('click', function() {
+    themeToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         htmlElement.classList.toggle('dark');
         if (htmlElement.classList.contains('dark')) {
             themeIcon.classList.replace('fa-moon', 'fa-sun');
@@ -26,17 +28,60 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.querySelector('.sidebar');
     
     if (mobileMenuBtn && sidebar) {
-        mobileMenuBtn.addEventListener('click', function() {
+        mobileMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
             sidebar.classList.toggle('show');
         });
 
         // Close sidebar when clicking outside
         document.addEventListener('click', function(e) {
-            if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
-                sidebar.classList.remove('show');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    sidebar.classList.remove('show');
+                }
             }
         });
     }
+
+    // Handle Dropdowns
+    const dropdowns = document.querySelectorAll('.dropdown');
+    dropdowns.forEach(dropdown => {
+        const toggle = dropdown.querySelector('button');
+        const menu = dropdown.querySelector('.dropdown-menu');
+        
+        toggle?.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Close all other dropdowns
+            dropdowns.forEach(otherDropdown => {
+                if (otherDropdown !== dropdown) {
+                    otherDropdown.querySelector('.dropdown-menu')?.classList.remove('show');
+                }
+            });
+            
+            // Toggle current dropdown
+            menu?.classList.toggle('show');
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown')) {
+            dropdowns.forEach(dropdown => {
+                dropdown.querySelector('.dropdown-menu')?.classList.remove('show');
+            });
+        }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            sidebar?.classList.remove('show');
+            dropdowns.forEach(dropdown => {
+                dropdown.querySelector('.dropdown-menu')?.classList.remove('show');
+            });
+        }
+    });
 
     // Demo Tutorial
     const startDemoBtn = document.getElementById('start-demo');
@@ -105,4 +150,4 @@ function handleResize() {
 }
 
 window.addEventListener('resize', handleResize);
-handleResize(); 
+handleResize();

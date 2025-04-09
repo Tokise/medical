@@ -63,70 +63,74 @@ $showDemo = isset($user['demo_completed']) ? !$user['demo_completed'] : false;
 </head>
 <body class="dark-theme" data-user-role="<?php echo isset($role) ? htmlspecialchars(strtolower($role)) : ''; ?>">
     <header class="header">
+        <!-- Left section - Mobile Menu -->
+        <button id="mobile-menu-btn" class="nav-link" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Center section - Logo -->
         <div class="brand">
-            <button id="mobile-menu-btn" class="nav-link d-md-none">
-                <i class="fas fa-bars"></i>
-            </button>
             <a class="logo" href="/medical/index.php">
                 <img src="/medical/assets/img/logo.png" alt="MedMS Logo" class="brand-logo">
                 <span class="brand-name">MedMS</span>
             </a>
         </div>
-        
+
+        <!-- Right section - Nav Menu -->
         <?php if (isset($_SESSION['user_id'])): ?>
-            <nav class="nav-menu">
-                <!-- Theme Toggle -->
-                <div class="nav-item">
-                    <button id="theme-toggle" class="nav-link">
-                        <i id="theme-icon" class="fas fa-sun"></i>
-                    </button>
-                </div>
-                
-                <!-- Notifications -->
-                <div class="nav-item dropdown">
-                    <button class="nav-link">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
-                    </button>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-header">
-                            <h6>Notifications</h6>
-                            <a href="#">Mark all as read</a>
-                        </div>
-                        <div class="dropdown-body">
-                            <a class="dropdown-item" href="#"><i class="fas fa-info-circle"></i> New Message</a>
-                            <a class="dropdown-item" href="#"><i class="fas fa-calendar"></i> Appointment Update</a>
-                            <a class="dropdown-item" href="#"><i class="fas fa-bell"></i> System Alert</a>
-                        </div>
+        <nav class="nav-menu">
+            <!-- Notifications -->
+            <div class="nav-item dropdown">
+                <button class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                <div class="dropdown-menu">
+                    <div class="dropdown-header">
+                        <h6>Notifications</h6>
+                        <a href="#">Mark all as read</a>
+                    </div>
+                    <div class="dropdown-body">
+                        <a class="dropdown-item" href="#"><i class="fas fa-info-circle"></i> New Message</a>
+                        <a class="dropdown-item" href="#"><i class="fas fa-calendar"></i> Appointment Update</a>
+                        <a class="dropdown-item" href="#"><i class="fas fa-bell"></i> System Alert</a>
                     </div>
                 </div>
-                
-                <!-- Messages -->
-                <div class="nav-item dropdown">
-                    <button class="nav-link">
-                        <i class="fas fa-envelope"></i>
-                        <span class="badge">2</span>
-                    </button>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-header">
-                            <h6>Messages</h6>
-                            <a href="#">View all</a>
-                        </div>
-                        <div class="dropdown-body">
-                            <a class="dropdown-item" href="#"><i class="fas fa-envelope"></i> New Message</a>
-                            <a class="dropdown-item" href="#"><i class="fas fa-inbox"></i> Inbox</a>
-                        </div>
+            </div>
+            
+            <!-- Messages -->
+            <div class="nav-item dropdown">
+                <button class="nav-link">
+                    <i class="fas fa-envelope"></i>
+                    <span class="badge">2</span>
+                </button>
+                <div class="dropdown-menu">
+                    <div class="dropdown-header">
+                        <h6>Messages</h6>
+                        <a href="#">View all</a>
+                    </div>
+                    <div class="dropdown-body">
+                        <a class="dropdown-item" href="#"><i class="fas fa-envelope"></i> New Message</a>
+                        <a class="dropdown-item" href="#"><i class="fas fa-inbox"></i> Inbox</a>
                     </div>
                 </div>
-                
-                <!-- User Profile -->
-                <div class="nav-item dropdown">
-                    <button class="profile-toggle">
-                        <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : '/medical/assets/img/user-icon.png' ?>" 
-                             alt="Profile" class="profile-img">
-                        <span class="profile-name"><?= htmlspecialchars($user['first_name']) ?></span>
-                    </button>
-                    <div class="dropdown-menu">
+            </div>
+            
+            <!-- User Profile -->
+            <div class="nav-item dropdown">
+                <button class="profile-toggle">
+                    <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : '/medical/assets/img/user-icon.png' ?>" 
+                         alt="Profile" class="profile-img">
+                </button>
+                <div class="dropdown-menu">
+                    <div class="dropdown-header">
+                        <h6><?= htmlspecialchars($user['first_name']) ?></h6>
+                    </div>
+                    <div class="dropdown-body">
+                        <a class="dropdown-item" href="#" id="theme-toggle">
+                            <i id="theme-icon" class="fas fa-sun"></i>
+                            <span>Toggle Theme</span>
+                        </a>
                         <a class="dropdown-item" href="/medical/src/modules/profile/index.php">
                             <i class="fas fa-user"></i> My Profile
                         </a>
@@ -142,7 +146,8 @@ $showDemo = isset($user['demo_completed']) ? !$user['demo_completed'] : false;
                         </a>
                     </div>
                 </div>
-            </nav>
+            </div>
+        </nav>
         <?php endif; ?>
     </header>
 
@@ -202,10 +207,17 @@ $showDemo = isset($user['demo_completed']) ? !$user['demo_completed'] : false;
         // Mobile menu toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.overlay');
         
-        if (mobileMenuBtn && sidebar) {
+        if (mobileMenuBtn && sidebar && overlay) {
             mobileMenuBtn.addEventListener('click', function() {
                 sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+            });
+            
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
             });
         }
     });
