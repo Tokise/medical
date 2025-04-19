@@ -94,7 +94,7 @@ body {
 }
 
 .auth-header h2 {
-    color: var(--text-primary);
+    color: #fff;
     margin-bottom: 0.5rem;
 }
 

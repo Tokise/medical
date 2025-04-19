@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="auth-brand-overlay"></div>
             <div class="auth-brand-content">
                 <a href="/medical/index.php">
-                    <img src="/MedMS/assets/img/logo.png" alt="MedMS Logo">
+                    <img src="../medical/assets/img/logo.png" alt="MedMS Logo">
                     <h1>MedMS</h1>
                 </a>
                 <p>Medical Management System for Schools</p>
