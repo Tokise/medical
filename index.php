@@ -1,331 +1,510 @@
 <?php
+// Initialize the session
 session_start();
-require_once 'config/db.php';
 
+// Check if the user is already logged in, redirect to dashboard
+if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
+    header("location: src/modules/dashboard/index.php");
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
-<html lang="en" class="dark scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedMS - Medical Management System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/MedMS/styles/variables.css">
-    <link rel="stylesheet" href="/MedMS/styles/global.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
-                    },
-                    colors: {
-                        dark: {
-                            primary: 'var(--primary-dark)',
-                            secondary: 'var(--secondary-dark)',
-                            accent: 'var(--accent-dark)',
-                        }
-                    }
-                }
+    <title>Healthcare Portal - Medical Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="src/styles/variables.css">
+    <link rel="stylesheet" href="src/styles/global.css">
+    <style>
+        /* Navbar */
+        .navbar {
+            background-color: var(--bg-white);
+            box-shadow: var(--shadow-md);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: var(--z-index-fixed);
+        }
+        
+        .navbar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .navbar-logo img {
+            height: 40px;
+        }
+        
+        .navbar-logo-text {
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-lg);
+            color: var(--primary-color);
+        }
+        
+        .navbar-menu {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .navbar-menu a {
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .navbar-menu a:hover {
+            color: var(--primary-color);
+        }
+        
+        .navbar-cta {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: var(--font-size-lg);
+            color: var(--text-secondary);
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            padding: 8rem 0 5rem;
+            position: relative;
+            overflow: hidden;
+            background-color: var(--bg-white);
+        }
+        
+        .hero-container {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .hero-content {
+            flex: 1;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: var(--font-weight-bold);
+            line-height: var(--line-height-tight);
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .hero-title span {
+            color: var(--primary-color-dark);
+        }
+        
+        .hero-subtitle {
+            font-size: var(--font-size-lg);
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .hero-image {
+            flex: 0.8;
+            display: flex;
+            justify-content: center;
+          
+        }
+        
+        .hero-image img {
+            max-width: 55%;
+            border-radius: var(--border-radius-lg);
+            transform: scaleX(-1);
+            margin-right : 150px auto;
+        }
+        
+        /* Features */
+        .features-section {
+            padding: 5rem 0;
+            background-color: var(--bg-light);
+        }
+        
+        .features-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .features-title h2 {
+            font-size: var(--font-size-xl);
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .features-title p {
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background-color: var(--bg-white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 2rem;
+            text-align: center;
+            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color-light);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: var(--font-size-xl);
+        }
+        
+        .feature-title {
+            font-size: var(--font-size-lg);
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .feature-description {
+            color: var(--text-secondary);
+        }
+        
+        /* Footer */
+        .footer {
+            background-color: var(--primary-color);
+            color: var(--text-white);
+            padding: 4rem 0 2rem;
+        }
+        
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-logo img {
+            height: 40px;
+        }
+        
+        .footer-logo-text {
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-lg);
+            color: var(--text-white);
+        }
+        
+        .footer-description {
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+        }
+        
+        .footer-title {
+            font-size: var(--font-size-md);
+            margin-bottom: 1.5rem;
+            font-weight: var(--font-weight-semibold);
+        }
+        
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-white);
+            opacity: 0.8;
+            transition: opacity var(--transition-normal);
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .footer-social a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-white);
+            transition: background-color var(--transition-normal);
+        }
+        
+        .footer-social a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .footer-bottom {
+            margin-top: 3rem;
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-bottom p {
+            opacity: 0.8;
+            font-size: var(--font-size-sm);
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .hero-container {
+                flex-direction: column;
+            }
+            
+            .hero-content, .hero-image {
+                flex: none;
+                width: 100%;
+            }
+            
+            .hero-image {
+                justify-content: center;
+                margin-top: 2rem;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
             }
         }
-    </script>
+        
+        @media (max-width: 768px) {
+            .navbar-menu, .navbar-cta {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .menu-active .navbar-menu, .menu-active .navbar-cta {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--bg-white);
+                padding: 1rem;
+                box-shadow: var(--shadow-md);
+            }
+            
+            .hero-cta {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
-<body class="gradient-bg text-gray-100 font-sans min-h-screen">
-    <!-- Navigation -->
-    <nav class="fixed w-full z-50 bg-gray-950/95 backdrop-blur-sm border-b border-gray-800/50">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex items-center justify-between">
-                <a href="index.php" class="flex items-center space-x-3">
-                    <img src="../medical/assets/img/logo.png" alt="MedMS Logo" class="h-12 w-12">
-                    <span class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-indigo-600 bg-clip-text text-transparent">MedMS</span>
-                </a>
-                
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="#features" class="nav-link">Features</a>
-                    <a href="#about" class="nav-link">About</a>
-                    <a href="#blog" class="nav-link">Blog</a>
-                    <div class="flex items-center space-x-4">
-                        <a href="../medical/auth/login.php" class="btn-primary">Log In</a>
-                        <a href="../medical/auth/signup.php" class="border border-indigo-600 text-indigo-400 px-6 py-2 rounded-lg hover:bg-indigo-600 hover:text-white transition-all">Sign Up</a>
-                    </div>
-                </div>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="index.php" class="navbar-logo">
+                <img src="assets/img/logo.png" alt="Healthcare Logo">
+                <span class="navbar-logo-text">MedMS</span>
+            </a>
+            
+            <button class="menu-toggle" id="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="navbar-menu">
+                <a href="#features">Features</a>
+                <a href="#about">About Us</a>
+                <a href="#services">Services</a>
+                <a href="#contact">Contact</a>
+            </div>
+            
+            <div class="navbar-cta">
+                <a href="src/auth/login.php" class="btn btn-outline">Login</a>
+             
             </div>
         </div>
     </nav>
-
+    
     <!-- Hero Section -->
-    <section class="min-h-[80vh] flex items-center pt-28 pb-16 overflow-hidden relative">
-        <div class="absolute inset-0 bg-gradient-to-b from-gray-950 via-gray-900/95 to-gray-950 pointer-events-none"></div>
-        <div class="container mx-auto">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                <div class="relative flex justify-center items-center px-4 lg:px-0 order-2 lg:order-1 mt-50">
-                    <div class="absolute -top-20 -left-20 w-85-85  bg-indigo-600/20 rounded-full filter blur-3xl"></div>
-                    <img src="../medical/assets/img/hero.png" alt="Healthcare Illustration" 
-                         class="relative z-10 w-full max-w-xs mx-auto transform hover:scale-105 transition-transform duration-500 ">
+    <section class="hero-section">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">Modern Healthcare <span>Management</span> System</h1>
+                <p class="hero-subtitle">Streamline your medical facility operations with our comprehensive healthcare management platform. Designed for hospitals, clinics, and educational institutions.</p>
+                <div class="hero-cta">
+                    <a href="src/auth/login.php" class="btn btn-primary">Get Started</a>
+                    <a href="#features" class="btn btn-outline">Learn More</a>
                 </div>
-                <div class="space-y-6 text-left relative z-10 px-4 lg:px-0 order-1 lg:order-2">
-                    <div class="absolute -top-40 -left-40 w-80 h-80 bg-indigo-600/30 rounded-full filter blur-3xl"></div>
-                    <h1 class="text-4xl lg:text-5xl font-bold leading-tight text-white">
-                        Medical Management
-                        <span class="bg-gradient-to-r from-indigo-400 to-indigo-600 bg-clip-text text-transparent">System</span>
-                        <br>for Schools
-                    </h1>
-                    <p class="text-lg text-gray-200 max-w-xl font-medium">
-                        A comprehensive solution for managing health services, medical records, and prescriptions in educational institutions.
-                    </p>
-                    <div class="flex items-center space-x-6 pt-4">
-                        <a href="../medical/auth/login.php" class="btn-primary">Get Started</a>
-                        <a href="#features" class="group flex items-center space-x-2 text-indigo-300 hover:text-indigo-200 transition-colors font-medium">
-                            <span>Learn more</span>
-                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                        </a>
-                    </div>
-                </div>
+            </div>
+            <div class="hero-image">
+                <img src="assets/img/hero.png" alt="Healthcare Management System">
             </div>
         </div>
     </section>
-
+    
     <!-- Features Section -->
-    <section id="features" class="relative py-20">
-        <div class="absolute inset-0 bg-gradient-to-b from-gray-950/95 via-gray-900/90 to-gray-950/95"></div>
-        <div class="container mx-auto relative z-10">
-            <h2 class="text-3xl font-bold text-center mb-12">Key Features</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="bg-gray-900/50 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center border border-gray-800/50">
-                    <div class="bg-gray-700 p-4 rounded-full mx-auto mb-4">
-                        <i class="fas fa-user-md text-3xl text-gray-300"></i>
+    <section class="features-section" id="features">
+        <div class="container">
+            <div class="features-title">
+                <h2>Powerful Features for Healthcare Management</h2>
+                <p>Our healthcare management system offers a comprehensive suite of tools to streamline your medical facility operations.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-check"></i>
                     </div>
-                    <h4 class="text-xl font-semibold mb-2">Medical Staff Management</h4>
-                    <p class="text-gray-400">Efficiently manage doctors and nurses, track their availability, and schedule appointments.</p>
+                    <h3 class="feature-title">Appointment Scheduling</h3>
+                    <p class="feature-description">Efficiently manage appointments and reduce wait times with our intuitive scheduling system.</p>
                 </div>
-                <div class="bg-gray-900/50 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center border border-gray-800/50">
-                    <div class="bg-gray-700 p-4 rounded-full mx-auto mb-4">
-                        <i class="fas fa-notes-medical text-3xl text-gray-300"></i>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-medical"></i>
                     </div>
-                    <h4 class="text-xl font-semibold mb-2">Electronic Health Records</h4>
-                    <p class="text-gray-400">Securely store and access student and staff medical records, including history and medications.</p>
+                    <h3 class="feature-title">Patient Records</h3>
+                    <p class="feature-description">Keep detailed patient records securely stored and easily accessible when needed.</p>
                 </div>
-                <div class="bg-gray-900/50 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center border border-gray-800/50">
-                    <div class="bg-gray-700 p-4 rounded-full mx-auto mb-4">
-                        <i class="fas fa-prescription text-3xl text-gray-300"></i>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-pills"></i>
                     </div>
-                    <h4 class="text-xl font-semibold mb-2">Prescription Management</h4>
-                    <p class="text-gray-400">Create, manage, and track prescriptions and medications for students and staff.</p>
+                    <h3 class="feature-title">Prescription Management</h3>
+                    <p class="feature-description">Create, manage, and track prescriptions to ensure patients receive proper medication.</p>
                 </div>
-                <div class="bg-gray-900/50 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center border border-gray-800/50">
-                    <div class="bg-gray-700 p-4 rounded-full mx-auto mb-4">
-                        <i class="fas fa-robot text-3xl text-gray-300"></i>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
                     </div>
-                    <h4 class="text-xl font-semibold mb-2">AI Integration</h4>
-                    <p class="text-gray-400">Access AI-powered consultations for first aid advice and basic health information.</p>
+                    <h3 class="feature-title">Health Analytics</h3>
+                    <p class="feature-description">Access insightful analytics and reports to improve patient care and facility operations.</p>
                 </div>
-                <div class="bg-gray-900/50 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center border border-gray-800/50">
-                    <div class="bg-gray-700 p-4 rounded-full mx-auto mb-4">
-                        <i class="fas fa-chart-bar text-3xl text-gray-300"></i>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-md"></i>
                     </div>
-                    <h4 class="text-xl font-semibold mb-2">Statistics & Reports</h4>
-                    <p class="text-gray-400">Generate detailed reports and visualize medical data to improve health services.</p>
+                    <h3 class="feature-title">Staff Management</h3>
+                    <p class="feature-description">Track staff schedules, assignments, and performance to optimize resource allocation.</p>
                 </div>
-                <div class="bg-gray-900/50 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center border border-gray-800/50">
-                    <div class="bg-gray-700 p-4 rounded-full mx-auto mb-4">
-                        <i class="fas fa-lock text-3xl text-gray-300"></i>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
                     </div>
-                    <h4 class="text-xl font-semibold mb-2">Secure Access</h4>
-                    <p class="text-gray-400">Role-based access control ensures that users can only access appropriate information.</p>
+                    <h3 class="feature-title">Notifications & Alerts</h3>
+                    <p class="feature-description">Receive timely alerts for important events and patient care reminders.</p>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- About Section -->
-    <section id="about" class="relative py-20">
-        <div class="absolute inset-0 bg-gradient-to-b from-gray-950/90 via-gray-900/95 to-gray-950/90"></div>
-        <div class="container mx-auto relative z-10">
-            <h2 class="text-3xl font-bold text-center mb-12">About MedMS</h2>
-            <div class="flex flex-col lg:flex-row items-center gap-12">
-                <div class="lg:w-1/2">
-                    <div class="relative rounded-xl overflow-hidden h-[400px] group">
-                        <div class="absolute inset-0 bg-indigo-600/10 group-hover:bg-indigo-600/20 transition-colors duration-300"></div>
-                        <img src="../medical/assets/img/logo.png" 
-                             alt="About MedMS" 
-                             class="w-full h-full object-cover rounded-xl object-center">
-                    </div>
-                </div>
-                <div class="lg:w-1/2 space-y-6 relative z-10">
-                    <h3 class="text-3xl font-bold text-white">Why Choose MedMS?</h3>
-                    <p class="text-base md:text-lg text-white/90 leading-relaxed">
-                        MedMS is designed specifically for educational institutions to streamline their medical management processes. Our system helps schools provide better healthcare services to students and staff.
-                    </p>
-                    <ul class="space-y-4">
-                        <li class="flex items-start space-x-3">
-                            <svg class="w-6 h-6 text-indigo-400 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span class="text-white/90">Easy-to-use interface for all user roles</span>
-                        </li>
-                        <li class="flex items-start space-x-3">
-                            <svg class="w-6 h-6 text-indigo-400 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span class="text-white/90">Comprehensive medical record management</span>
-                        </li>
-                        <li class="flex items-start space-x-3">
-                            <svg class="w-6 h-6 text-indigo-400 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span class="text-white/90">Advanced reporting and analytics capabilities</span>
-                        </li>
-                    </ul>
-                    <div class="pt-6">
-                        <a href="../medical/auth/signup.php" class="btn-primary inline-flex items-center space-x-2">
-                            <span>Get Started</span>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Blog Section -->
-    <section id="blog" class="relative py-20">
-        <div class="absolute inset-0 bg-gradient-to-b from-gray-950/95 via-gray-900/95 to-gray-950/95"></div>
-        <div class="container mx-auto relative z-10">
-            <h2 class="text-3xl font-bold text-center mb-12">Latest Updates</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Blog Card 1 -->
-                <div class="bg-gray-900/50 backdrop-blur-sm p-6 rounded-lg shadow-lg border border-gray-800/50 hover:border-indigo-600/50 transition-all group">
-                    <div class="aspect-video rounded-lg mb-4 overflow-hidden">
-                        <img src="../medical/assets/img/logo.png" 
-                             alt="Digital Health Records" 
-                             class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500">
-                    </div>
-                    <div class="space-y-3">
-                        <span class="text-indigo-400 text-sm font-medium">Healthcare</span>
-                        <h3 class="text-xl font-semibold text-white">Digital Health Records</h3>
-                        <p class="text-gray-300">Learn how digital health records are revolutionizing school healthcare management...</p>
-                        <a href="#" class="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-medium group-hover:gap-2 transition-all">
-                            Read More 
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Blog Card 2 -->
-                <div class="bg-gray-900/50 backdrop-blur-sm p-6 rounded-lg shadow-lg border border-gray-800/50 hover:border-indigo-600/50 transition-all group">
-                    <div class="aspect-video rounded-lg mb-4 overflow-hidden">
-                        <img src="../medical/assets/img/logo.png" 
-                             alt="AI in Healthcare" 
-                             class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500">
-                    </div>
-                    <div class="space-y-3">
-                        <span class="text-indigo-400 text-sm font-medium">Technology</span>
-                        <h3 class="text-xl font-semibold text-white">AI Integration Benefits</h3>
-                        <p class="text-gray-300">Explore how AI is transforming healthcare management in educational settings...</p>
-                        <a href="#" class="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-medium group-hover:gap-2 transition-all">
-                            Read More 
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Blog Card 3 -->
-                <div class="bg-gray-900/50 backdrop-blur-sm p-6 rounded-lg shadow-lg border border-gray-800/50 hover:border-indigo-600/50 transition-all group">
-                    <div class="aspect-video rounded-lg mb-4 overflow-hidden">
-                        <img src="../medical/assets/img/logo.png" 
-                             alt="Medical Safety" 
-                             class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500">
-                    </div>
-                    <div class="space-y-3">
-                        <span class="text-indigo-400 text-sm font-medium">Safety</span>
-                        <h3 class="text-xl font-semibold text-white">School Health Protocols</h3>
-                        <p class="text-gray-300">Best practices for implementing health protocols in educational institutions...</p>
-                        <a href="#" class="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-medium group-hover:gap-2 transition-all">
-                            Read More 
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
+    
     <!-- Footer -->
-    <footer class="relative py-12">
-        <div class="absolute inset-0 bg-gradient-to-b from-gray-950/95 via-gray-900/90 to-gray-950/95"></div>
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="space-y-4">
-                    <h5 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-indigo-600 bg-clip-text text-transparent">MedMS</h5>
-                    <p class="text-gray-400">Medical Management System for Schools</p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-indigo-600 hover:text-white transition-all">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-indigo-600 hover:text-white transition-all">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-indigo-600 hover:text-white transition-all">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-indigo-600 hover:text-white transition-all">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                    </div>
+    <footer class="footer">
+        <div class="container footer-container">
+            <div>
+                <div class="footer-logo">
+                    <img src="assets/img/logo.png" alt="Healthcare Logo">
+                    <span class="footer-logo-text">MedMS</span>
                 </div>
-                <div class="space-y-4">
-                    <h5 class="text-xl font-bold text-gray-100">Quick Links</h5>
-                    <ul class="space-y-2">
-                        <li><a href="#features" class="text-gray-400 hover:text-indigo-400 transition-colors">Features</a></li>
-                        <li><a href="#about" class="text-gray-400 hover:text-indigo-400 transition-colors">About</a></li>
-                        <li><a href="#blog" class="text-gray-400 hover:text-indigo-400 transition-colors">Blog</a></li>
-                        <li><a href="../medical/auth/login.php" class="text-gray-400 hover:text-indigo-400 transition-colors">Login</a></li>
-                    </ul>
-                </div>
-                <div class="space-y-4">
-                    <h5 class="text-xl font-bold text-gray-100">Legal</h5>
-                    <ul class="space-y-2">
-                        <li><a href="/privacy" class="text-gray-400 hover:text-indigo-400 transition-colors">Privacy Policy</a></li>
-                        <li><a href="/terms" class="text-gray-400 hover:text-indigo-400 transition-colors">Terms of Service</a></li>
-                    </ul>
-                </div>
-                <div class="space-y-4">
-                    <h5 class="text-xl font-bold text-gray-100">Contact</h5>
-                    <ul class="space-y-2">
-                        <li class="flex items-center space-x-2 text-gray-400">
-                            <i class="fas fa-envelope"></i>
-                            <span>support@medms.com</span>
-                        </li>
-                        <li class="flex items-center space-x-2 text-gray-400">
-                            <i class="fas fa-phone"></i>
-                            <span>+1 234 567 890</span>
-                        </li>
-                    </ul>
+                <p class="footer-description">Modern healthcare management system designed for medical facilities and educational institutions.</p>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
             
-            <div class="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400">
-                <p>&copy; <?= date('Y') ?> MedMS. All rights reserved.</p>
+            <div>
+                <h3 class="footer-title">Quick Links</h3>
+                <div class="footer-links">
+                    <a href="#features">Features</a>
+                    <a href="#about">About Us</a>
+                    <a href="#services">Services</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="footer-title">Resources</h3>
+                <div class="footer-links">
+                    <a href="#">Help Center</a>
+                    <a href="#">Documentation</a>
+                    <a href="#">API Reference</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="footer-title">Contact Us</h3>
+                <div class="footer-links">
+                    <a href="#"><i class="fas fa-map-marker-alt"></i> 123 Medical Avenue, City</a>
+                    <a href="#"><i class="fas fa-phone"></i> +1 (555) 123-4567</a>
+                    <a href="#"><i class="fas fa-envelope"></i> info@healthcare.com</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; <?php echo date("Y"); ?> Healthcare Management System. All rights reserved.</p>
             </div>
         </div>
     </footer>
+    
+    <script>
+        // Mobile menu toggle
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            document.querySelector('.navbar-container').classList.toggle('menu-active');
+        });
+    </script>
 </body>
 </html>
