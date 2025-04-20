@@ -1,6 +1,52 @@
 # MedMS - Medical Management System 🏥
 
+<p align="center">
+  <img src="./assets/img/logo.png" alt="MedMS Logo" width="200">
+</p>
+
 A comprehensive web-based healthcare management system designed for schools to manage student and staff health records, appointments, consultations, and medical resources.
+
+## 📸 Screenshots
+
+### Home Page
+<p align="center">
+  <img src="./assets/img/home.png" alt="Home Page" width="800">
+</p>
+
+### Login Page
+<p align="center">
+  <img src="./assets/img/login.png" alt="Login Page" width="800">
+</p>
+
+### Admin Dashboard
+<p align="center">
+  <img src="./assets/img/admin.png" alt="Admin Dashboard" width="800">
+</p>
+
+### Student Dashboard
+<p align="center">
+  <img src="./assets/img/student.png" alt="Student Dashboard" width="800">
+</p>
+
+### Teacher Dashboard
+<p align="center">
+  <img src="./assets/img/teacher.png" alt="Teacher Dashboard" width="800">
+</p>
+
+### Staff Dashboard
+<p align="center">
+  <img src="./assets/img/staff.png" alt="Staff Dashboard" width="800">
+</p>
+
+### Doctor Dashboard
+<p align="center">
+  <img src="./assets/img/doctor.png" alt="Doctor Dashboard" width="800">
+</p>
+
+### Nurse Dashboard
+<p align="center">
+  <img src="./assets/img/nurse.png" alt="Nurse Dashboard" width="800">
+</p>
 
 ## 🏥 Features
 
@@ -81,20 +127,13 @@ define('DB_NAME', 'medical_management');
 - Medical Staff (Doctors/Nurses)
 - Administrators
 
-## 🎨 Logo
-
-![MedMS Logo](logo.png)
+## 🎨 Logo Information
 
 The MedMS logo features a modern, minimalist design with curved elements arranged in a flower-like pattern:
 - Four curved gradient shapes radiating from a central point
 - Small circular elements at each cardinal point
 - Subtle gray gradient providing depth and dimension
 - Clean, professional look that represents health and wellness
-
-To use the logo:
-1. The logo file is located at `logo.png` in the root directory
-2. For website display, refer to it in HTML/CSS as needed
-3. Maintain appropriate spacing around the logo for optimal visibility
 
 ## 📞 Support
 

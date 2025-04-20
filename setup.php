@@ -169,32 +169,50 @@ foreach ($default_accounts as $account) {
                 // Create role-specific records
                 switch (strtolower($account['role'])) {
                     case 'doctor':
-                    case 'nurse':
-                        // Create medical staff record
-                        $license = isset($account['license_number']) ? $account['license_number'] : "NOT_SET_" . rand(1000, 9999);
-                        $specialization = isset($account['specialization']) ? $account['specialization'] : "";
+                        // Create doctor record
+                        $license = isset($account['license_number']) ? $account['license_number'] : "DOC_" . rand(1000, 9999);
+                        $specialization = isset($account['specialization']) ? $account['specialization'] : "General Medicine";
                         
-                        $staff_sql = "INSERT INTO medical_staff (user_id, license_number, specialization) VALUES (?, ?, ?)";
-                        if ($staff_stmt = mysqli_prepare($conn, $staff_sql)) {
-                            mysqli_stmt_bind_param($staff_stmt, "iss", $user_id, $license, $specialization);
-                            mysqli_stmt_execute($staff_stmt);
+                        $doctor_sql = "INSERT INTO doctors (user_id, license_number, specialization, availability_status) VALUES (?, ?, ?, 'Available')";
+                        if ($doctor_stmt = mysqli_prepare($conn, $doctor_sql)) {
+                            mysqli_stmt_bind_param($doctor_stmt, "iss", $user_id, $license, $specialization);
+                            mysqli_stmt_execute($doctor_stmt);
                             
-                            // Get the staff_id
-                            $staff_id = mysqli_insert_id($conn);
-                            
-                            // Add default schedules for doctors and nurses
-                            if ($staff_id) {
-                                $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-                                foreach ($weekdays as $day) {
-                                    $schedule_sql = "INSERT INTO medical_staff_schedule (staff_id, day_of_week, start_time, end_time) VALUES (?, ?, '08:00:00', '17:00:00')";
-                                    $schedule_stmt = mysqli_prepare($conn, $schedule_sql);
-                                    mysqli_stmt_bind_param($schedule_stmt, "is", $staff_id, $day);
-                                    mysqli_stmt_execute($schedule_stmt);
-                                    mysqli_stmt_close($schedule_stmt);
-                                }
+                            // Add default schedules for doctors
+                            $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+                            foreach ($weekdays as $day) {
+                                $schedule_sql = "INSERT INTO medical_schedule (user_id, day_of_week, start_time, end_time) VALUES (?, ?, '08:00:00', '17:00:00')";
+                                $schedule_stmt = mysqli_prepare($conn, $schedule_sql);
+                                mysqli_stmt_bind_param($schedule_stmt, "is", $user_id, $day);
+                                mysqli_stmt_execute($schedule_stmt);
+                                mysqli_stmt_close($schedule_stmt);
                             }
                             
-                            mysqli_stmt_close($staff_stmt);
+                            mysqli_stmt_close($doctor_stmt);
+                        }
+                        break;
+                        
+                    case 'nurse':
+                        // Create nurse record
+                        $license = isset($account['license_number']) ? $account['license_number'] : "NRS_" . rand(1000, 9999);
+                        $specialization = isset($account['specialization']) ? $account['specialization'] : "General Nursing";
+                        
+                        $nurse_sql = "INSERT INTO nurses (user_id, license_number, specialization, availability_status) VALUES (?, ?, ?, 'Available')";
+                        if ($nurse_stmt = mysqli_prepare($conn, $nurse_sql)) {
+                            mysqli_stmt_bind_param($nurse_stmt, "iss", $user_id, $license, $specialization);
+                            mysqli_stmt_execute($nurse_stmt);
+                            
+                            // Add default schedules for nurses
+                            $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+                            foreach ($weekdays as $day) {
+                                $schedule_sql = "INSERT INTO medical_schedule (user_id, day_of_week, start_time, end_time) VALUES (?, ?, '08:00:00', '17:00:00')";
+                                $schedule_stmt = mysqli_prepare($conn, $schedule_sql);
+                                mysqli_stmt_bind_param($schedule_stmt, "is", $user_id, $day);
+                                mysqli_stmt_execute($schedule_stmt);
+                                mysqli_stmt_close($schedule_stmt);
+                            }
+                            
+                            mysqli_stmt_close($nurse_stmt);
                         }
                         break;
                         

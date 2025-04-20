@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400">
+  <style>
+    .primary { fill: #4169E1; }
+    .secondary { fill: #6495ED; }
+    .accent { fill: #FFFFFF; }
+    .highlight { fill: #F0F8FF; }
+    .doctor { fill: #5D8AA8; }
+    .nurse { fill: #87CEEB; }
+  </style>
+  <!-- Background -->
+  <rect x="0" y="0" width="500" height="400" rx="20" fill="#F8F9FA" />
+  
+  <!-- Doctor Figure -->
+  <circle cx="150" cy="100" r="40" class="accent" stroke="#5D8AA8" stroke-width="3" />
+  <rect x="110" y="150" width="80" height="120" rx="10" class="doctor" />
+  <rect x="130" y="270" width="15" height="60" rx="5" class="doctor" />
+  <rect x="155" y="270" width="15" height="60" rx="5" class="doctor" />
+  
+  <!-- Nurse Figure -->
+  <circle cx="250" cy="100" r="40" class="accent" stroke="#87CEEB" stroke-width="3" />
+  <rect x="210" y="150" width="80" height="120" rx="10" class="nurse" />
+  <rect x="230" y="270" width="15" height="60" rx="5" class="nurse" />
+  <rect x="255" y="270" width="15" height="60" rx="5" class="nurse" />
+  
+  <!-- Staff Figure -->
+  <circle cx="350" cy="100" r="40" class="accent" stroke="#6495ED" stroke-width="3" />
+  <rect x="310" y="150" width="80" height="120" rx="10" class="secondary" />
+  <rect x="330" y="270" width="15" height="60" rx="5" class="secondary" />
+  <rect x="355" y="270" width="15" height="60" rx="5" class="secondary" />
+  
+  <!-- Medical Icons -->
+  <rect x="135" y="180" width="30" height="30" rx="5" class="accent" />
+  <rect x="135" y="185" width="30" height="5" class="doctor" />
+  <rect x="147.5" y="180" width="5" height="30" class="doctor" />
+  
+  <rect x="235" y="180" width="30" height="30" rx="5" class="accent" />
+  <rect x="235" y="195" width="30" height="5" class="nurse" />
+  
+  <rect x="335" y="180" width="30" height="30" rx="5" class="accent" />
+  <rect x="335" y="185" width="30" height="5" class="secondary" />
+  <rect x="347.5" y="180" width="5" height="30" class="secondary" />
+  
+  <text x="250" y="370" text-anchor="middle" fill="#4169E1" font-family="Arial" font-size="16" font-weight="bold">Medical Team</text>
+</svg> 

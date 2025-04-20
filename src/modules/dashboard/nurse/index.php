@@ -62,7 +62,7 @@ $inventoryAlerts = $conn->query($inventoryAlertsQuery)->fetch_all(MYSQLI_ASSOC) 
     <section class="main-content">
         <div class="container">
            
-
+        <h1 class="page-title">Nurse Dashboard</h1>
             <!-- Stats Cards -->
             <div class="stats-row">
                 <div class="stats-card">

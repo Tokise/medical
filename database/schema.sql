@@ -80,25 +80,40 @@ CREATE TABLE staff (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
--- Medical Staff Information (Doctors/Nurses)
-CREATE TABLE medical_staff (
-    staff_id INT PRIMARY KEY AUTO_INCREMENT,
+-- Doctor Information
+CREATE TABLE doctors (
+    doctor_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT UNIQUE NOT NULL,
     specialization VARCHAR(100),
     license_number VARCHAR(100) UNIQUE NOT NULL,
     availability_status ENUM('Available', 'Busy', 'Off-duty') DEFAULT 'Available',
-    staff_type ENUM('Doctor', 'Nurse') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
--- Medical Staff Schedule
-CREATE TABLE medical_staff_schedule (
+-- Nurse Information
+CREATE TABLE nurses (
+    nurse_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT UNIQUE NOT NULL,
+    specialization VARCHAR(100),
+    license_number VARCHAR(100) UNIQUE NOT NULL,
+    availability_status ENUM('Available', 'Busy', 'Off-duty') DEFAULT 'Available',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Medical Staff Schedule (shared between doctors and nurses)
+CREATE TABLE medical_schedule (
     schedule_id INT PRIMARY KEY AUTO_INCREMENT,
-    staff_id INT NOT NULL,
+    user_id INT NOT NULL,
     day_of_week ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday') NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    FOREIGN KEY (staff_id) REFERENCES medical_staff(staff_id) ON DELETE CASCADE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 -- Appointments Table
@@ -313,3 +328,4 @@ INSERT INTO medical_supplies (item_name, description, current_quantity, unit, re
 ('Antiseptic Solution', 'Betadine solution', 20, 'bottles', 10, 'Pharma Supplies', 5.00),
 ('Cotton Balls', 'Sterile cotton balls', 150, 'packs', 50, 'Medical Supplies Co.', 1.00),
 ('Surgical Masks', 'Disposable face masks', 200, 'pieces', 100, 'Healthcare Products Inc.', 0.25);
+

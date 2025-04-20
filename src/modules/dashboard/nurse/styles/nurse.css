@@ -586,6 +586,13 @@
     margin-bottom: 0;
 }
 
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .stats-row {

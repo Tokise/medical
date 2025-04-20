@@ -1,15 +1,15 @@
 <?php
 session_start();
-require_once '../../../config/db.php';
+require_once '../../../../../config/config.php';
 
 // Check if user is logged in and has teacher role
-if (!isset($_SESSION['user_id']) || $_SESSION['role_name'] !== 'Teacher') {
-    header("Location: /MedMS/auth/login.php");
+if (!isset($_SESSION['id']) || $_SESSION['role'] !== 'teacher') {
+    header("Location: /medical/auth/login.php");
     exit;
 }
 
 // Get current user data
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['id'];
 $query = "SELECT * FROM users WHERE user_id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
@@ -32,7 +32,7 @@ $healthRecord = $healthRecordStmt->get_result()->fetch_assoc();
 // Get upcoming appointments
 $appointmentsQuery = "SELECT c.*, u.first_name, u.last_name, u.profile_image 
                      FROM consultations c
-                     JOIN users u ON c.staff_id = u.user_id
+                     JOIN users u ON c.doctor_id = u.user_id
                      WHERE c.patient_id = ? AND c.consultation_date >= CURDATE() AND c.status != 'Cancelled'
                      ORDER BY c.consultation_date ASC
                      LIMIT 5";
@@ -45,7 +45,7 @@ $upcomingAppointments = $appointmentsStmt->get_result()->fetch_all(MYSQLI_ASSOC)
 $prescriptionsQuery = "SELECT p.*, u.first_name, u.last_name, m.name as medication_name, 
                       pi.dosage, pi.frequency as dosage_instructions
                       FROM prescriptions p
-                      JOIN users u ON p.staff_id = u.user_id
+                      JOIN users u ON p.doctor_id = u.user_id
                       LEFT JOIN prescription_items pi ON p.prescription_id = pi.prescription_id
                       LEFT JOIN medications m ON pi.medication_id = m.medication_id
                       WHERE p.user_id = ?
@@ -57,9 +57,9 @@ $prescriptionsStmt->execute();
 $recentPrescriptions = $prescriptionsStmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Get available doctors for appointment booking
-$doctorsQuery = "SELECT u.user_id, u.first_name, u.last_name, u.profile_image, ms.specialization as specialty
+$doctorsQuery = "SELECT u.user_id, u.first_name, u.last_name, u.profile_image, d.specialization as specialty
                 FROM users u
-                JOIN medical_staff ms ON u.user_id = ms.user_id
+                JOIN doctors d ON u.user_id = d.user_id
                 JOIN roles r ON u.role_id = r.role_id
                 WHERE r.role_name = 'Doctor'
                 ORDER BY u.last_name ASC";
@@ -72,8 +72,6 @@ $announcementsQuery = "SELECT * FROM first_aid_tips
                       LIMIT 3";
 $healthAnnouncements = $conn->query($announcementsQuery)->fetch_all(MYSQLI_ASSOC);
 
-// Pass the role to be used in the sidebar
-$role = 'Teacher';
 ?>
 
 <!DOCTYPE html>
@@ -87,472 +85,267 @@ $role = 'Teacher';
     <!-- Flatpickr for date selection -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/MedMS/styles/variables.css">
-    <link rel="stylesheet" href="/MedMS/styles/dashboard.css">
-    <!-- Intro.js for guided tour -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/6.0.0/introjs.min.css">
+    <link rel="stylesheet" href="/medical/src/styles/components.css"> 
+    <link rel="stylesheet" href="/medical/src/styles/variables.css">
+    <link rel="stylesheet" href="/medical/src/styles/global.css">
+    <link rel="stylesheet" href="styles/teacher.css">
 </head>
-<body class="dark-theme">
-    <?php include_once '../../../includes/header.php'; ?>
+<body>
+    <?php include_once '../../../../../includes/header.php'; ?>
     
-    <div class="container-fluid mt-4">
-        <div class="row">
-            <!-- Dashboard Content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2" data-intro="Welcome to your health dashboard! This is your central hub for managing health services.">Teacher Health Dashboard</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="startTutorial">
-                                <i class="fas fa-question-circle"></i> Help
-                            </button>
-                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#appointmentModal">
-                                <i class="fas fa-calendar-plus"></i> Book Appointment
-                            </button>
-                        </div>
+    <div class="teacher-dashboard">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div class="welcome-content">
+                <h1>Welcome, <?= htmlspecialchars($user['first_name']) ?>!</h1>
+                <p>Track your health records, manage appointments, and access faculty wellness programs all in one place.</p>
+            </div>
+            <div class="welcome-image">
+                <img src="/medical/assets/img/teacher-health.svg" alt="Teacher Health" onerror="this.src='/medical/assets/img/default-banner.png'">
+            </div>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card animate-in" style="animation-delay: 0.1s;">
+                <div class="stat-header">
+                    <h4 class="stat-title">Health Status</h4>
+                    <div class="stat-icon">
+                        <i class="fas fa-heart"></i>
                     </div>
                 </div>
-                
-                <!-- Welcome Section -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card welcome-card">
-                            <div class="card-body">
-                                <div class="row align-items-center">
-                                    <div class="col-auto">
-                                        <img src="<?= !empty($user['profile_image']) ? htmlspecialchars($user['profile_image']) : 'https://via.placeholder.com/150' ?>" class="rounded-circle teacher-profile-img" alt="Teacher Profile" width="80" height="80">
-                                    </div>
-                                    <div class="col">
-                                        <h4>Welcome, <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?></h4>
-                                        <p class="text-muted mb-0">Faculty ID: <?= htmlspecialchars($user['school_id']) ?> | <?= date('l, F j, Y') ?></p>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="alert alert-info mb-0">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            <strong>Reminder:</strong> Faculty wellness program sessions every Wednesday.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <h2 class="stat-value">Good</h2>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Overall Wellness</span>
+                </div>
+            </div>
+            
+            <div class="stat-card animate-in" style="animation-delay: 0.2s;">
+                <div class="stat-header">
+                    <h4 class="stat-title">Upcoming Appointments</h4>
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
                     </div>
                 </div>
-                
-                <!-- Quick Stats -->
-                <div class="row mb-4" data-intro="These cards show important health information and upcoming appointments">
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card stats-card health-status">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h6 class="text-muted">Health Status</h6>
-                                        <h3 class="fw-bold mt-2 text-success">Good</h3>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-heart fa-2x"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card stats-card upcoming-appointments">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h6 class="text-muted">Upcoming Appointments</h6>
-                                        <h3 class="fw-bold mt-2"><?= count($upcomingAppointments) ?></h3>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-calendar-check fa-2x"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card stats-card active-prescriptions">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h6 class="text-muted">Active Prescriptions</h6>
-                                        <h3 class="fw-bold mt-2"><?= count($recentPrescriptions) ?></h3>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-prescription fa-2x"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card stats-card wellness-program">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col">
-                                        <h6 class="text-muted">Faculty Wellness</h6>
-                                        <h3 class="fw-bold mt-2">
-                                            <span class="badge bg-success">Active</span>
-                                        </h3>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-spa fa-2x"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <h2 class="stat-value"><?= count($upcomingAppointments) ?></h2>
+                <div class="stat-change">
+                    <i class="fas fa-calendar"></i>
+                    <span>Next: <?= !empty($upcomingAppointments) ? date('M d, Y', strtotime($upcomingAppointments[0]['consultation_date'])) : 'None' ?></span>
+                </div>
+            </div>
+            
+            <div class="stat-card animate-in" style="animation-delay: 0.3s;">
+                <div class="stat-header">
+                    <h4 class="stat-title">Active Prescriptions</h4>
+                    <div class="stat-icon">
+                        <i class="fas fa-prescription"></i>
                     </div>
                 </div>
-                
+                <h2 class="stat-value"><?= count($recentPrescriptions) ?></h2>
+                <div class="stat-change">
+                    <i class="fas fa-pills"></i>
+                    <span>Current Medications</span>
+                </div>
+            </div>
+            
+            <div class="stat-card animate-in" style="animation-delay: 0.4s;">
+                <div class="stat-header">
+                    <h4 class="stat-title">Faculty Wellness</h4>
+                    <div class="stat-icon">
+                        <i class="fas fa-spa"></i>
+                    </div>
+                </div>
+                <h2 class="stat-value">Active</h2>
+                <div class="stat-change positive">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Program Enrolled</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Left Column -->
+            <div class="dashboard-column">
                 <!-- Health Announcements -->
-                <div class="row mb-4" data-intro="Important health announcements for faculty members">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <i class="fas fa-bullhorn me-1"></i>
-                                Faculty Health Announcements
-                            </div>
-                            <div class="card-body">
-                                <?php if (count($healthAnnouncements) > 0): ?>
-                                    <div class="list-group">
-                                        <?php foreach ($healthAnnouncements as $announcement): ?>
-                                            <div class="list-group-item">
-                                                <div class="d-flex w-100 justify-content-between">
-                                                    <h5 class="mb-1"><?= htmlspecialchars($announcement['title']) ?></h5>
-                                                    <small class="badge bg-<?= $announcement['emergency_level'] == 'High' ? 'danger' : ($announcement['emergency_level'] == 'Medium' ? 'warning' : 'info') ?>"><?= htmlspecialchars($announcement['emergency_level']) ?></small>
-                                                </div>
-                                                <p class="mb-1"><?= htmlspecialchars($announcement['description']) ?></p>
-                                                <small class="text-muted">Created: <?= date('M j, Y', strtotime($announcement['created_at'])) ?></small>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        No current health announcements.
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Two-column layout for appointments and health record -->
-                <div class="row mb-4">
-                    <!-- Upcoming Appointments -->
-                    <div class="col-lg-6 mb-4">
-                        <div class="card" data-intro="Here you can see your upcoming medical appointments">
-                            <div class="card-header">
-                                <i class="fas fa-calendar-alt me-1"></i>
-                                Upcoming Appointments
-                            </div>
-                            <div class="card-body">
-                                <?php if (count($upcomingAppointments) > 0): ?>
-                                    <div class="list-group mb-3">
-                                        <?php foreach ($upcomingAppointments as $appointment): ?>
-                                            <div class="list-group-item list-group-item-action">
-                                                <div class="d-flex w-100 justify-content-between">
-                                                    <h5 class="mb-1">
-                                                        <i class="fas fa-stethoscope me-2"></i>
-                                                        Dr. <?= htmlspecialchars($appointment['first_name'] . ' ' . $appointment['last_name']) ?>
-                                                    </h5>
-                                                    <small class="badge bg-primary">
-                                                        <?= date('M j, Y', strtotime($appointment['consultation_date'])) ?>
-                                                    </small>
-                                                </div>
-                                                <p class="mb-1">
-                                                    <i class="fas fa-clock me-1"></i>
-                                                    <?= date('h:i A', strtotime($appointment['consultation_date'])) ?>
-                                                </p>
-                                                <p class="mb-1">
-                                                    <i class="fas fa-comment-medical me-1"></i>
-                                                    Reason: <?= htmlspecialchars($appointment['reason']) ?>
-                                                </p>
-                                                <div class="d-flex mt-2">
-                                                    <a href="/MedMS/src/modules/consultation/view.php?id=<?= $appointment['consultation_id'] ?>" class="btn btn-sm btn-outline-info me-2">
-                                                        <i class="fas fa-eye"></i> Details
-                                                    </a>
-                                                    <?php if ($appointment['status'] === 'scheduled'): ?>
-                                                    <a href="/MedMS/src/modules/consultation/cancel.php?id=<?= $appointment['consultation_id'] ?>" class="btn btn-sm btn-outline-danger me-2">
-                                                        <i class="fas fa-times-circle"></i> Cancel
-                                                    </a>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                    
-                                    <a href="/MedMS/src/modules/consultation/history.php" class="btn btn-outline-primary">
-                                        <i class="fas fa-history"></i> View All Appointments
-                                    </a>
-                                <?php else: ?>
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        You have no upcoming appointments.
-                                        <button type="button" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#appointmentModal">
-                                            Book Now
-                                        </button>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+                <div class="announcements-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-bullhorn"></i>
+                            Faculty Health Announcements
+                        </h3>
+                        <a href="/medical/src/modules/announcements/list.php" class="btn btn-primary">View All</a>
                     </div>
                     
-                    <!-- Health Record Summary -->
-                    <div class="col-lg-6">
-                        <div class="card mb-4" data-intro="This section shows a summary of your health records">
-                            <div class="card-header">
-                                <i class="fas fa-file-medical me-1"></i>
-                                Health Record Summary
+                    <?php if (count($healthAnnouncements) > 0): ?>
+                        <?php foreach ($healthAnnouncements as $announcement): ?>
+                            <div class="announcement-item">
+                                <div class="announcement-header">
+                                    <h4 class="announcement-title"><?= htmlspecialchars($announcement['title']) ?></h4>
+                                    <span class="announcement-level level-<?= strtolower($announcement['emergency_level']) ?>">
+                                        <?= htmlspecialchars($announcement['emergency_level']) ?>
+                                    </span>
+                                </div>
+                                <p class="announcement-content"><?= htmlspecialchars($announcement['description']) ?></p>
+                                <span class="announcement-date">Posted: <?= date('M j, Y', strtotime($announcement['created_at'])) ?></span>
                             </div>
-                            <div class="card-body">
-                                <?php if ($healthRecord): ?>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <h6 class="text-muted">Blood Type</h6>
-                                            <p class="fw-bold"><?= htmlspecialchars($healthRecord['blood_type'] ?? 'Not recorded') ?></p>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <h6 class="text-muted">Allergies</h6>
-                                            <p class="fw-bold"><?= htmlspecialchars($healthRecord['allergies'] ?? 'None') ?></p>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <h6 class="text-muted">Weight</h6>
-                                            <p class="fw-bold"><?= htmlspecialchars($healthRecord['weight'] ?? 'Not recorded') ?> kg</p>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <h6 class="text-muted">Height</h6>
-                                            <p class="fw-bold"><?= htmlspecialchars($healthRecord['height'] ?? 'Not recorded') ?> cm</p>
-                                        </div>
-                                        <div class="col-12 mb-3">
-                                            <h6 class="text-muted">Medical Conditions</h6>
-                                            <p class="fw-bold"><?= htmlspecialchars($healthRecord['medical_conditions'] ?? 'None recorded') ?></p>
-                                        </div>
-                                        <div class="col-12 mb-3">
-                                            <h6 class="text-muted">Last Updated</h6>
-                                            <p class="fw-bold"><?= $healthRecord['updated_at'] ? date('F j, Y', strtotime($healthRecord['updated_at'])) : 'Never' ?></p>
-                                        </div>
-                                    </div>
-                                    
-                                    <a href="/MedMS/src/modules/medical_history/view.php?id=<?= $user_id ?>" class="btn btn-outline-primary">
-                                        <i class="fas fa-file-medical-alt"></i> View Complete Health Record
-                                    </a>
-                                <?php else: ?>
-                                    <div class="alert alert-warning">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>
-                                        No health record found. Please visit the clinic to complete your health record.
-                                    </div>
-                                <?php endif; ?>
-                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <i class="fas fa-info-circle"></i>
+                            <h4 class="empty-title">No Announcements</h4>
+                            <p class="empty-description">There are no current health announcements for faculty members.</p>
                         </div>
-                        
-                        <!-- Recent Prescriptions -->
-                        <div class="card" data-intro="Your most recent prescriptions are shown here">
-                            <div class="card-header">
-                                <i class="fas fa-prescription-bottle-alt me-1"></i>
-                                Recent Prescriptions
+                    <?php endif; ?>
+                </div>
+                
+                <!-- Upcoming Appointments -->
+                <div class="appointments-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            Upcoming Appointments
+                        </h3>
+                        <a href="/medical/src/modules/appointments/book.php" class="btn btn-primary">Book New</a>
+                    </div>
+                    
+                    <div class="appointments-list">
+                        <?php if (count($upcomingAppointments) > 0): ?>
+                            <?php foreach ($upcomingAppointments as $index => $appointment): ?>
+                                <?php 
+                                $appointmentDate = new DateTime($appointment['consultation_date']);
+                                $status = $appointment['status'];
+                                ?>
+                                <div class="appointment-item animate-in" style="animation-delay: <?= 0.1 * $index ?>s;">
+                                    <div class="appointment-time">
+                                        <div class="time-month"><?= $appointmentDate->format('M') ?></div>
+                                        <div class="time-day"><?= $appointmentDate->format('d') ?></div>
+                                        <div class="time-hour"><?= $appointmentDate->format('h:i A') ?></div>
+                                    </div>
+                                    <div class="appointment-content">
+                                        <h4 class="appointment-title">Consultation with Dr. <?= htmlspecialchars($appointment['last_name']) ?></h4>
+                                        <p class="appointment-doctor"><?= htmlspecialchars($appointment['consultation_type'] ?? 'General Checkup') ?></p>
+                                    </div>
+                                    <div class="appointment-status <?= strtolower($status) ?>">
+                                        <?= htmlspecialchars($status) ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-times"></i>
+                                <h4 class="empty-title">No Upcoming Appointments</h4>
+                                <p class="empty-description">You don't have any scheduled appointments.</p>
                             </div>
-                            <div class="card-body">
-                                <?php if (count($recentPrescriptions) > 0): ?>
-                                    <div class="list-group">
-                                        <?php foreach ($recentPrescriptions as $prescription): ?>
-                                            <a href="/MedMS/src/modules/prescription/view.php?id=<?= $prescription['prescription_id'] ?>" class="list-group-item list-group-item-action">
-                                                <div class="d-flex w-100 justify-content-between">
-                                                    <h6 class="mb-1"><?= htmlspecialchars($prescription['medication_name']) ?></h6>
-                                                    <small><?= date('M j, Y', strtotime($prescription['created_at'])) ?></small>
-                                                </div>
-                                                <p class="mb-1">
-                                                    <small class="text-muted">
-                                                        <i class="fas fa-user-md me-1"></i> Dr. <?= htmlspecialchars($prescription['first_name'] . ' ' . $prescription['last_name']) ?>
-                                                    </small>
-                                                </p>
-                                                <p class="mb-1">
-                                                    <small>
-                                                        <i class="fas fa-pills me-1"></i>
-                                                        <?= htmlspecialchars($prescription['dosage_instructions']) ?>
-                                                    </small>
-                                                </p>
-                                            </a>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        No recent prescriptions.
-                                    </div>
-                                <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="dashboard-column">
+                <!-- Health Record Section -->
+                <div class="health-record-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-notes-medical"></i>
+                            Health Record Summary
+                        </h3>
+                        <a href="/medical/src/modules/health-records/view.php" class="btn btn-primary">View Complete</a>
+                    </div>
+                    
+                    <div class="health-record-content">
+                        <div class="health-info">
+                            <div class="info-item animate-in" style="animation-delay: 0.1s;">
+                                <div class="info-label">Blood Type</div>
+                                <div class="info-value"><?= !empty($healthRecord['blood_type']) ? htmlspecialchars($healthRecord['blood_type']) : 'Not recorded' ?></div>
+                                <div class="info-icon"><i class="fas fa-tint"></i></div>
+                            </div>
+                            
+                            <div class="info-item animate-in" style="animation-delay: 0.2s;">
+                                <div class="info-label">Medical Conditions</div>
+                                <div class="info-value"><?= !empty($healthRecord['medical_conditions']) ? htmlspecialchars($healthRecord['medical_conditions']) : 'None recorded' ?></div>
+                                <div class="info-icon"><i class="fas fa-heartbeat"></i></div>
+                            </div>
+                            
+                            <div class="info-item animate-in" style="animation-delay: 0.3s;">
+                                <div class="info-label">Allergies</div>
+                                <div class="info-value"><?= !empty($healthRecord['allergies']) ? htmlspecialchars($healthRecord['allergies']) : 'None recorded' ?></div>
+                                <div class="info-icon"><i class="fas fa-allergies"></i></div>
+                            </div>
+                            
+                            <div class="info-item animate-in" style="animation-delay: 0.4s;">
+                                <div class="info-label">Demographics</div>
+                                <div class="info-value"><?= !empty($healthRecord['demographic_data']) ? htmlspecialchars($healthRecord['demographic_data']) : 'Not available' ?></div>
+                                <div class="info-icon"><i class="fas fa-id-card"></i></div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Faculty Wellness Program -->
-                <div class="row mb-4" data-intro="Faculty-specific wellness programs and resources">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <i class="fas fa-spa me-1"></i>
-                                Faculty Wellness Program
+                <div class="wellness-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-spa"></i>
+                            Faculty Wellness Program
+                        </h3>
+                        <a href="/medical/src/modules/wellness/teacher-program.php" class="btn btn-primary">Learn More</a>
+                    </div>
+                    
+                    <div class="wellness-content">
+                        <div class="wellness-program">
+                            <h3>Stress Management Workshop</h3>
+                            <p class="wellness-description">Weekly sessions on mindfulness and stress reduction techniques specifically designed for teaching professionals.</p>
+                            <div class="wellness-badge">
+                                <i class="fas fa-calendar-check"></i>
+                                Every Wednesday at 4:00 PM
                             </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <div class="card h-100">
-                                            <div class="card-body">
-                                                <h5 class="card-title"><i class="fas fa-heartbeat me-2"></i> Fitness Sessions</h5>
-                                                <p class="card-text">Weekly faculty fitness sessions every Tuesday and Thursday from 4:30 PM to 5:30 PM at the gym.</p>
-                                                <a href="/MedMS/src/modules/wellness/fitness.php" class="btn btn-sm btn-outline-primary">Register</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <div class="card h-100">
-                                            <div class="card-body">
-                                                <h5 class="card-title"><i class="fas fa-brain me-2"></i> Mental Wellness</h5>
-                                                <p class="card-text">Stress management workshops and confidential counseling services for faculty members.</p>
-                                                <a href="/MedMS/src/modules/wellness/mental.php" class="btn btn-sm btn-outline-primary">Learn More</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <div class="card h-100">
-                                            <div class="card-body">
-                                                <h5 class="card-title"><i class="fas fa-users me-2"></i> Health Screening</h5>
-                                                <p class="card-text">Annual faculty health screening program scheduled for next month. Don't miss it!</p>
-                                                <a href="/MedMS/src/modules/wellness/screening.php" class="btn btn-sm btn-outline-primary">Schedule</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        </div>
+                        
+                        <div class="wellness-program">
+                            <h3>Faculty Fitness Group</h3>
+                            <p class="wellness-description">Join other faculty members for group exercise sessions tailored to improve physical health and wellness.</p>
+                            <div class="wellness-badge">
+                                <i class="fas fa-calendar-check"></i>
+                                Mondays and Fridays at 5:30 PM
+                            </div>
+                        </div>
+                        
+                        <div class="wellness-program">
+                            <h3>Work-Life Balance Coaching</h3>
+                            <p class="wellness-description">One-on-one sessions with wellness coaches to help establish healthy boundaries and reduce burnout.</p>
+                            <div class="wellness-badge">
+                                <i class="fas fa-calendar-check"></i>
+                                By appointment
                             </div>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
-    </div>
-    
-    <!-- Appointment Booking Modal -->
-    <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="appointmentModalLabel">Book an Appointment</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="/MedMS/src/modules/consultation/create.php" method="POST">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="doctor" class="form-label">Select Doctor</label>
-                            <select class="form-select" id="doctor" name="staff_id" required>
-                                <option value="">Select a doctor</option>
-                                <?php foreach ($doctors as $doctor): ?>
-                                    <option value="<?= $doctor['user_id'] ?>">
-                                        Dr. <?= htmlspecialchars($doctor['first_name'] . ' ' . $doctor['last_name']) ?> 
-                                        (<?= htmlspecialchars($doctor['specialty']) ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="consultation_date" class="form-label">Appointment Date & Time</label>
-                            <input type="text" class="form-control" id="consultation_date" name="consultation_date" placeholder="Select date and time" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="reason" class="form-label">Reason for Visit</label>
-                            <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Please describe your symptoms or reason for the appointment" required></textarea>
-                        </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="urgent" name="urgent" value="1">
-                            <label class="form-check-label" for="urgent">
-                                This is urgent
-                            </label>
-                        </div>
-                        <input type="hidden" name="patient_id" value="<?= $user_id ?>">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Book Appointment</button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
-    
-    <!-- Tutorial Modal -->
-    <div class="modal fade" id="tutorialModal" tabindex="-1" aria-labelledby="tutorialModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="tutorialModalLabel">Welcome to Teacher Health Dashboard</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h6>Welcome to your Faculty Health Dashboard</h6>
-                    <p>This dashboard helps you manage your health at our institution. Here you can:</p>
-                    <ul>
-                        <li>View your health record and medical history</li>
-                        <li>Schedule appointments with healthcare providers</li>
-                        <li>Access faculty wellness programs</li>
-                        <li>View prescriptions and medication instructions</li>
-                        <li>Stay updated with health announcements for faculty</li>
-                    </ul>
-                    <p>Would you like to take a quick tour of the system?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Skip Tour</button>
-                    <button type="button" class="btn btn-primary" id="startTutorialFromModal">Start Tour</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <?php include_once '../../../includes/footer.php'; ?>
-    
-    <!-- FlatPickr for date selection -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <!-- Custom JS for Dashboard -->
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize date picker for appointment booking
-        flatpickr("#consultation_date", {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            minDate: "today",
-            minTime: "09:00",
-            maxTime: "17:00",
-            time_24hr: true,
-            disable: [
-                function(date) {
-                    // Disable weekends
-                    return (date.getDay() === 0 || date.getDay() === 6);
-                }
-            ]
+        // Animate elements when they come into view
+        const animateItems = document.querySelectorAll('.stat-card, .info-item, .appointment-item, .prescription-item');
+        animateItems.forEach(item => {
+            item.classList.add('animate-in');
         });
         
-        // Display the tutorial modal if it's the user's first login
-        <?php if (isset($_SESSION['show_tutorial']) && $_SESSION['show_tutorial']): ?>
-            var tutorialModal = new bootstrap.Modal(document.getElementById('tutorialModal'));
-            tutorialModal.show();
-            <?php $_SESSION['show_tutorial'] = false; ?>
-        <?php endif; ?>
-        
-        // Start tutorial when button is clicked
-        document.getElementById('startTutorial').addEventListener('click', function() {
-            introJs().start();
-        });
-        
-        document.getElementById('startTutorialFromModal').addEventListener('click', function() {
-            var tutorialModal = bootstrap.Modal.getInstance(document.getElementById('tutorialModal'));
-            tutorialModal.hide();
-            setTimeout(function() {
-                introJs().start();
-            }, 500);
-        });
+        // Initialize date picker if needed
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr(".date-picker", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: "today"
+            });
+        }
     });
     </script>
+    
+    <?php include_once '../../../../../includes/footer.php'; ?>
 </body>
 </html>

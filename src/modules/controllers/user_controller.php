@@ -3,7 +3,7 @@ session_start();
 require_once '../../../config/db.php';
 
 // Check if user is logged in and has admin role
-if (!isset($_SESSION['user_id']) || $_SESSION['role_name'] !== 'Admin') {
+if (!isset($_SESSION['id']) || $_SESSION['role'] !== 'admin') {
     header("Location: /medical/auth/login.php");
     exit;
 }
@@ -69,7 +69,7 @@ function createUser($conn) {
 
     if ($insertStmt->execute()) {
         // Log the action
-        $user_id = $_SESSION['user_id'];
+        $user_id = $_SESSION['id'];
         $action = "Created new user: $username";
         $logQuery = "INSERT INTO system_logs (user_id, action) VALUES (?, ?)";
         $logStmt = $conn->prepare($logQuery);
@@ -108,7 +108,7 @@ function updateUser($conn) {
 
     if ($updateStmt->execute()) {
         // Log the action
-        $admin_id = $_SESSION['user_id'];
+        $admin_id = $_SESSION['id'];
         $action = "Updated user ID: $user_id";
         $logQuery = "INSERT INTO system_logs (user_id, action) VALUES (?, ?)";
         $logStmt = $conn->prepare($logQuery);
@@ -142,7 +142,7 @@ function deleteUser($conn) {
 
     if ($deleteStmt->execute()) {
         // Log the action
-        $admin_id = $_SESSION['user_id'];
+        $admin_id = $_SESSION['id'];
         $action = "Deleted user ID: $user_id";
         $logQuery = "INSERT INTO system_logs (user_id, action) VALUES (?, ?)";
         $logStmt = $conn->prepare($logQuery);

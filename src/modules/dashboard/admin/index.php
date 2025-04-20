@@ -23,81 +23,21 @@ function get_dashboard_stats() {
     ];
     
     // Get counts with error handling to prevent query failures
-    // Try to get medical staff counts - adjust query to match actual table structure
+    // Try to get doctors and nurses counts from the new tables
     try {
-        // Check if medical_staff table exists and has the proper structure
-        $sql = "SHOW TABLES LIKE 'medical_staff'";
+        // Check if doctors table exists
+        $sql = "SHOW TABLES LIKE 'doctors'";
         $result = mysqli_query($conn, $sql);
         
         if ($result && mysqli_num_rows($result) > 0) {
-            // Check columns
-            $sql = "SHOW COLUMNS FROM medical_staff";
-            $columns = mysqli_query($conn, $sql);
-            $columnNames = [];
-            
-            if ($columns) {
-                while ($col = mysqli_fetch_assoc($columns)) {
-                    $columnNames[] = $col['Field'];
-                }
+            $sql = "SELECT COUNT(*) as count FROM doctors d 
+                    JOIN users u ON d.user_id = u.user_id";
+            $result = mysqli_query($conn, $sql);
+            if ($result && $row = mysqli_fetch_assoc($result)) {
+                $stats['doctors'] = $row['count'];
             }
-            
-            // If staff_type column exists
-            if (in_array('staff_type', $columnNames)) {
-                $sql = "SELECT COUNT(*) as count FROM medical_staff ms 
-                        JOIN users u ON ms.user_id = u.user_id 
-                        WHERE ms.staff_type = 'doctor'";
-                $result = mysqli_query($conn, $sql);
-                if ($result && $row = mysqli_fetch_assoc($result)) {
-                    $stats['doctors'] = $row['count'];
-                }
-                
-                $sql = "SELECT COUNT(*) as count FROM medical_staff ms 
-                        JOIN users u ON ms.user_id = u.user_id 
-                        WHERE ms.staff_type = 'nurse'";
-                $result = mysqli_query($conn, $sql);
-                if ($result && $row = mysqli_fetch_assoc($result)) {
-                    $stats['nurses'] = $row['count'];
-                }
-            } 
-            // Try with role column if staff_type doesn't exist
-            elseif (in_array('role', $columnNames)) {
-                $sql = "SELECT COUNT(*) as count FROM medical_staff ms 
-                        JOIN users u ON ms.user_id = u.user_id 
-                        WHERE ms.role = 'doctor'";
-                $result = mysqli_query($conn, $sql);
-                if ($result && $row = mysqli_fetch_assoc($result)) {
-                    $stats['doctors'] = $row['count'];
-                }
-                
-                $sql = "SELECT COUNT(*) as count FROM medical_staff ms 
-                        JOIN users u ON ms.user_id = u.user_id 
-                        WHERE ms.role = 'nurse'";
-                $result = mysqli_query($conn, $sql);
-                if ($result && $row = mysqli_fetch_assoc($result)) {
-                    $stats['nurses'] = $row['count'];
-                }
-            }
-            // Fallback to direct users table if no specific column found
-            else {
-                $sql = "SELECT COUNT(*) as count FROM users u 
-                        JOIN roles r ON u.role_id = r.role_id 
-                        WHERE r.role_name = 'doctor'";
-                $result = mysqli_query($conn, $sql);
-                if ($result && $row = mysqli_fetch_assoc($result)) {
-                    $stats['doctors'] = $row['count'];
-                }
-                
-                $sql = "SELECT COUNT(*) as count FROM users u 
-                        JOIN roles r ON u.role_id = r.role_id 
-                        WHERE r.role_name = 'nurse'";
-                $result = mysqli_query($conn, $sql);
-                if ($result && $row = mysqli_fetch_assoc($result)) {
-                    $stats['nurses'] = $row['count'];
-                }
-            }
-        }
-        else {
-            // Fallback to users table directly
+        } else {
+            // Fallback to users table with role
             $sql = "SELECT COUNT(*) as count FROM users u 
                     JOIN roles r ON u.role_id = r.role_id 
                     WHERE r.role_name = 'doctor'";
@@ -105,7 +45,21 @@ function get_dashboard_stats() {
             if ($result && $row = mysqli_fetch_assoc($result)) {
                 $stats['doctors'] = $row['count'];
             }
-            
+        }
+        
+        // Check if nurses table exists
+        $sql = "SHOW TABLES LIKE 'nurses'";
+        $result = mysqli_query($conn, $sql);
+        
+        if ($result && mysqli_num_rows($result) > 0) {
+            $sql = "SELECT COUNT(*) as count FROM nurses n 
+                    JOIN users u ON n.user_id = u.user_id";
+            $result = mysqli_query($conn, $sql);
+            if ($result && $row = mysqli_fetch_assoc($result)) {
+                $stats['nurses'] = $row['count'];
+            }
+        } else {
+            // Fallback to users table with role
             $sql = "SELECT COUNT(*) as count FROM users u 
                     JOIN roles r ON u.role_id = r.role_id 
                     WHERE r.role_name = 'nurse'";
@@ -174,10 +128,26 @@ function get_dashboard_stats() {
         $result = mysqli_query($conn, $sql);
         
         if ($result && mysqli_num_rows($result) > 0) {
-            $sql = "SELECT COUNT(*) as count FROM appointments";
-            $result = mysqli_query($conn, $sql);
-            if ($result && $row = mysqli_fetch_assoc($result)) {
-                $stats['appointments'] = $row['count'];
+            // First check for doctors table (new schema)
+            $sql = "SHOW TABLES LIKE 'doctors'";
+            $doctor_table_exists = mysqli_query($conn, $sql) && mysqli_num_rows(mysqli_query($conn, $sql)) > 0;
+            
+            // Also check for nurses table (new schema)
+            $sql = "SHOW TABLES LIKE 'nurses'";
+            $nurse_table_exists = mysqli_query($conn, $sql) && mysqli_num_rows(mysqli_query($conn, $sql)) > 0;
+            
+            if ($doctor_table_exists || $nurse_table_exists) {
+                $sql = "SELECT COUNT(*) as count FROM appointments";
+                $result = mysqli_query($conn, $sql);
+                if ($result && $row = mysqli_fetch_assoc($result)) {
+                    $stats['appointments'] = $row['count'];
+                }
+            } else {
+                $sql = "SELECT COUNT(*) as count FROM appointments";
+                $result = mysqli_query($conn, $sql);
+                if ($result && $row = mysqli_fetch_assoc($result)) {
+                    $stats['appointments'] = $row['count'];
+                }
             }
         }
     } catch (Exception $e) {
@@ -209,74 +179,77 @@ function get_dashboard_stats() {
     return $stats;
 }
 
-function get_recent_appointments($limit = 5) {
-    global $conn;
-    
+function get_recent_appointments($conn, $limit = 5) {
     $appointments = [];
     
-    try {
-        // Check if appointments table exists
-        $sql = "SHOW TABLES LIKE 'appointments'";
+    // First check for doctors table (new schema)
+    $sql = "SHOW TABLES LIKE 'doctors'";
+    $doctor_table_exists = mysqli_query($conn, $sql) && mysqli_num_rows(mysqli_query($conn, $sql)) > 0;
+    
+    // Also check for nurses table (new schema)
+    $sql = "SHOW TABLES LIKE 'nurses'";
+    $nurse_table_exists = mysqli_query($conn, $sql) && mysqli_num_rows(mysqli_query($conn, $sql)) > 0;
+    
+    if ($doctor_table_exists || $nurse_table_exists) {
+        // Using the new schema with separate tables for doctors and nurses
+        $sql = "SELECT 
+                   a.appointment_id,
+                   a.appointment_date,
+                   a.status,
+                   CONCAT(u_patient.first_name, ' ', u_patient.last_name) as patient_name,
+                   CONCAT(u_staff.first_name, ' ', u_staff.last_name) as staff_name,
+                   CASE 
+                       WHEN d.doctor_id IS NOT NULL THEN 'Doctor' 
+                       WHEN n.nurse_id IS NOT NULL THEN 'Nurse' 
+                       ELSE 'Staff' 
+                   END as staff_type
+               FROM 
+                   appointments a
+               JOIN 
+                   users u_patient ON a.patient_id = u_patient.user_id
+               JOIN 
+                   users u_staff ON a.doctor_id = u_staff.user_id
+               LEFT JOIN 
+                   doctors d ON a.doctor_id = d.user_id
+               LEFT JOIN 
+                   nurses n ON a.doctor_id = n.user_id
+               ORDER BY 
+                   a.appointment_date DESC
+               LIMIT $limit";
+        
         $result = mysqli_query($conn, $sql);
         
-        if ($result && mysqli_num_rows($result) > 0) {
-            // Check if medical_staff table exists
-            $sql = "SHOW TABLES LIKE 'medical_staff'";
-            $result = mysqli_query($conn, $sql);
-            
-            if ($result && mysqli_num_rows($result) > 0) {
-                $sql = "SELECT 
-                           a.appointment_id,
-                           a.appointment_date,
-                           a.status,
-                           CONCAT(u_patient.first_name, ' ', u_patient.last_name) as patient_name,
-                           CONCAT(u_doctor.first_name, ' ', u_doctor.last_name) as doctor_name
-                       FROM 
-                           appointments a
-                       JOIN 
-                           users u_patient ON a.patient_id = u_patient.user_id
-                       JOIN 
-                           medical_staff ms ON a.staff_id = ms.staff_id
-                       JOIN 
-                           users u_doctor ON ms.user_id = u_doctor.user_id
-                       ORDER BY 
-                           a.appointment_date DESC
-                       LIMIT $limit";
-                
-                $result = mysqli_query($conn, $sql);
-                
-                if ($result) {
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $appointments[] = $row;
-                    }
-                }
-            } else {
-                // Simplified query if medical_staff table doesn't exist
-                $sql = "SELECT 
-                           a.appointment_id,
-                           a.appointment_date,
-                           a.status,
-                           CONCAT(u.first_name, ' ', u.last_name) as patient_name,
-                           'Doctor' as doctor_name
-                       FROM 
-                           appointments a
-                       JOIN 
-                           users u ON a.patient_id = u.user_id
-                       ORDER BY 
-                           a.appointment_date DESC
-                       LIMIT $limit";
-                
-                $result = mysqli_query($conn, $sql);
-                
-                if ($result) {
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $appointments[] = $row;
-                    }
-                }
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $appointments[] = $row;
             }
         }
-    } catch (Exception $e) {
-        // Continue with empty appointments array
+    } else {
+        // Simplified query for old schema
+        $sql = "SELECT 
+                   a.appointment_id,
+                   a.appointment_date,
+                   a.status,
+                   CONCAT(u_patient.first_name, ' ', u_patient.last_name) as patient_name,
+                   CONCAT(u_staff.first_name, ' ', u_staff.last_name) as staff_name,
+                   'Medical Staff' as staff_type
+               FROM 
+                   appointments a
+               JOIN 
+                   users u_patient ON a.patient_id = u_patient.user_id
+               JOIN 
+                   users u_staff ON a.doctor_id = u_staff.user_id
+               ORDER BY 
+                   a.appointment_date DESC
+               LIMIT $limit";
+        
+        $result = mysqli_query($conn, $sql);
+        
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $appointments[] = $row;
+            }
+        }
     }
     
     return $appointments;
@@ -357,7 +330,7 @@ $username = $_SESSION['username'] ?? 'Admin';
 
 // Get dashboard statistics
 $stats = get_dashboard_stats();
-$recent_appointments = get_recent_appointments(5);
+$recent_appointments = get_recent_appointments($conn, 5);
 $low_stock_items = get_low_stock_items(5);
 
 // Page title
@@ -480,7 +453,7 @@ $page_title = "Admin Dashboard";
                                 <tr>
                                     <td><?php echo format_date($appointment['appointment_date'], 'M d, Y'); ?></td>
                                     <td><?php echo $appointment['patient_name']; ?></td>
-                                    <td><?php echo $appointment['doctor_name']; ?></td>
+                                    <td><?php echo $appointment['staff_name']; ?></td>
                                     <td>
                                         <span class="badge-status badge-<?php echo $appointment['status'] == 'Completed' ? 'success' : 
                                             ($appointment['status'] == 'Scheduled' ? 'primary' : 

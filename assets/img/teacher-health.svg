@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400">
+  <style>
+    .primary { fill: #4169E1; }
+    .secondary { fill: #6495ED; }
+    .accent { fill: #FFFFFF; }
+    .highlight { fill: #F0F8FF; }
+  </style>
+  <rect x="50" y="50" width="400" height="300" rx="20" class="primary" />
+  <circle cx="250" cy="120" r="50" class="accent" />
+  <rect x="200" y="180" width="100" height="150" rx="10" class="secondary" />
+  <rect x="80" y="120" width="80" height="10" rx="5" class="highlight" />
+  <rect x="80" y="140" width="60" height="10" rx="5" class="highlight" />
+  <rect x="80" y="160" width="70" height="10" rx="5" class="highlight" />
+  <rect x="80" y="200" width="80" height="10" rx="5" class="highlight" />
+  <rect x="80" y="220" width="60" height="10" rx="5" class="highlight" />
+  <rect x="340" y="120" width="80" height="10" rx="5" class="highlight" />
+  <rect x="360" y="140" width="60" height="10" rx="5" class="highlight" />
+  <rect x="350" y="160" width="70" height="10" rx="5" class="highlight" />
+  <rect x="340" y="200" width="80" height="10" rx="5" class="highlight" />
+  <rect x="360" y="220" width="60" height="10" rx="5" class="highlight" />
+  <rect x="340" y="240" width="80" height="10" rx="5" class="highlight" />
+  <rect x="210" y="200" width="80" height="10" rx="5" class="accent" />
+  <rect x="220" y="220" width="60" height="10" rx="5" class="accent" />
+  <rect x="230" y="280" width="40" height="40" rx="5" class="accent" />
+  <text x="250" y="330" text-anchor="middle" fill="white" font-family="Arial" font-size="12">Teacher</text>
+</svg> 
