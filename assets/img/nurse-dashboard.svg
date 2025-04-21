@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect x="96" y="96" width="320" height="320" rx="16" fill="#f8f9fa" stroke="#6c757d" stroke-width="4"/>
+  
+  <!-- Top Icons Row -->
+  <circle cx="144" cy="140" r="24" fill="#4f46e5"/>
+  <path d="M144 128V152" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <path d="M156 140H132" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  
+  <circle cx="208" cy="140" r="24" fill="#818cf8"/>
+  <path fill="white" d="M208 128L196 140H220L208 152" />
+  
+  <circle cx="272" cy="140" r="24" fill="#6366f1"/>
+  <circle cx="272" cy="140" r="10" stroke="white" stroke-width="3"/>
+  <path d="M286 154L280 148" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  
+  <circle cx="336" cy="140" r="24" fill="#818cf8"/>
+  <rect x="326" y="130" width="20" height="20" rx="2" stroke="white" stroke-width="3"/>
+  
+  <!-- Main Content -->
+  <rect x="128" y="192" width="120" height="60" rx="4" fill="#4f46e5" opacity="0.1"/>
+  <path d="M144 212H158" stroke="#4f46e5" stroke-width="3" stroke-linecap="round"/>
+  <path d="M144 222H168" stroke="#4f46e5" stroke-width="3" stroke-linecap="round"/>
+  <path d="M144 232H162" stroke="#4f46e5" stroke-width="3" stroke-linecap="round"/>
+  
+  <rect x="264" y="192" width="120" height="60" rx="4" fill="#818cf8" opacity="0.1"/>
+  <path d="M280 212H294" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M280 222H304" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M280 232H298" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+  
+  <rect x="128" y="272" width="120" height="60" rx="4" fill="#6366f1" opacity="0.1"/>
+  <path d="M144 292H158" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+  <path d="M144 302H168" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+  <path d="M144 312H162" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+  
+  <rect x="264" y="272" width="120" height="60" rx="4" fill="#4f46e5" opacity="0.1"/>
+  <path d="M280 292H294" stroke="#4f46e5" stroke-width="3" stroke-linecap="round"/>
+  <path d="M280 302H304" stroke="#4f46e5" stroke-width="3" stroke-linecap="round"/>
+  <path d="M280 312H298" stroke="#4f46e5" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Bottom Chart -->
+  <rect x="128" y="352" width="256" height="8" rx="4" fill="#e2e8f0"/>
+  <rect x="128" y="352" width="180" height="8" rx="4" fill="#4f46e5"/>
+  
+  <rect x="128" y="372" width="256" height="8" rx="4" fill="#e2e8f0"/>
+  <rect x="128" y="372" width="140" height="8" rx="4" fill="#818cf8"/>
+  
+  <rect x="128" y="392" width="256" height="8" rx="4" fill="#e2e8f0"/>
+  <rect x="128" y="392" width="210" height="8" rx="4" fill="#6366f1"/>
+</svg> 

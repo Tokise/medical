@@ -16,6 +16,80 @@
     margin-top: 5rem;
 }
 
+/* Welcome Banner */
+.welcome-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #4f46e5, #818cf8);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    color: white;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: url('/medical/assets/img/pattern.svg');
+    opacity: 0.1;
+    z-index: 0;
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 1;
+    max-width: 60%;
+}
+
+.welcome-content h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.welcome-content p {
+    font-size: 1rem;
+    opacity: 0.9;
+    animation: fadeInUp 0.7s ease-out;
+}
+
+.welcome-image {
+    position: relative;
+    z-index: 1;
+    width: 200px;
+    animation: floatImage 3s ease-in-out infinite;
+}
+
+.welcome-image img {
+    width: 100%;
+    height: auto;
+}
+
+@keyframes floatImage {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .welcome-section h1 {
     font-size: 1.8rem;
     font-weight: 600;

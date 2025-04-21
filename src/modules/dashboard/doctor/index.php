@@ -175,7 +175,18 @@ $page_title = "Doctor Dashboard";
     <?php include_once "../../../../includes/header.php"; ?>
     
     <div class="doctor-dashboard">
-        <h1 class="page-title">Doctor Dashboard</h1>
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div class="welcome-content">
+                <h1>Welcome, Dr. <?= htmlspecialchars($_SESSION['last_name'] ?? ($_SESSION['full_name'] ?? $_SESSION['username'])); ?>!</h1>
+                <p>Manage your patient appointments, consultations, and medical records all in one place.</p>
+            </div>
+            <div class="welcome-image">
+                <img src="/medical/assets/img/doctor-dashboard.svg" alt="Doctor Dashboard" onerror="this.src='/medical/assets/img/default-banner.png'">
+            </div>
+        </div>
+        
+
         
         <div class="d-flex justify-content-end mb-4">
             <div class="date-picker">

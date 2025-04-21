@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <rect width="800" height="400" fill="#4f46e5"/>
+  <path d="M0 100C150 150 250 50 400 80C550 110 700 60 800 100V400H0V100Z" fill="#6366f1" fill-opacity="0.5"/>
+  <path d="M0 150C150 200 350 100 500 180C650 260 750 180 800 200V400H0V150Z" fill="#818cf8" fill-opacity="0.5"/>
+  <path d="M0 0h800v400H0z" fill="url(#a)" fill-opacity=".1"/>
+  <defs>
+    <pattern id="a" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="scale(5)">
+      <path d="M0 20V0h20v20H0zm10-10a1 1 0 100-2 1 1 0 000 2z" fill="#fff" fill-opacity=".05"/>
+    </pattern>
+  </defs>
+</svg> 

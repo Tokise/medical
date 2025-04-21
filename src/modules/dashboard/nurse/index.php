@@ -62,7 +62,17 @@ $inventoryAlerts = $conn->query($inventoryAlertsQuery)->fetch_all(MYSQLI_ASSOC) 
     <section class="main-content">
         <div class="container">
            
-        <h1 class="page-title">Nurse Dashboard</h1>
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div class="welcome-content">
+                <h1>Welcome, <?= htmlspecialchars($user['first_name'] ?? ($_SESSION['full_name'] ?? $_SESSION['username'])); ?>!</h1>
+                <p>Manage student visits, track health records, and monitor medical supplies from your dashboard.</p>
+            </div>
+            <div class="welcome-image">
+                <img src="/medical/assets/img/nurse-dashboard.svg" alt="Nurse Dashboard" onerror="this.src='/medical/assets/img/default-banner.png'">
+            </div>
+        </div>
+
             <!-- Stats Cards -->
             <div class="stats-row">
                 <div class="stats-card">

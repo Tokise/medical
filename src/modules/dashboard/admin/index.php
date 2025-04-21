@@ -362,7 +362,18 @@ $page_title = "Admin Dashboard";
     <?php include_once "../../../../includes/header.php"; ?>
     
     <div class="admin-dashboard">
-        <h1 class="page-title">Admin Dashboard</h1>
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div class="welcome-content">
+                <h1>Welcome, <?= htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username']); ?>!</h1>
+                <p>Manage your healthcare facility, track activity, and maintain system resources from this central dashboard.</p>
+            </div>
+            <div class="welcome-image">
+                <img src="/medical/assets/img/admin-dashboard.svg" alt="Admin Dashboard" onerror="this.src='/medical/assets/img/default-banner.png'">
+            </div>
+        </div>
+        
+
         
         <div class="d-flex justify-content-end mb-4">
             <div class="date-picker">

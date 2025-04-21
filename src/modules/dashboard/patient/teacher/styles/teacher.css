@@ -3,29 +3,26 @@
 /* Teacher Dashboard Layout */
 .teacher-dashboard {
     padding: 2rem;
-    margin-left: 0; /* Remove sidebar margin */
+    margin-left: 0; /* No sidebar in new layout */
+    margin-top: 60px; /* Account for fixed header height */
+    min-height: calc(100vh - 60px - 60px); /* Subtract header and footer heights */
     background: var(--bg-light);
-    width: 100%;
-    box-sizing: border-box;
-
+    transition: margin-left 0.3s ease;
 }
 
 /* Welcome Banner */
 .welcome-banner {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     background: linear-gradient(135deg, #4f46e5, #818cf8);
-    border-radius: 10px; /* Replace var(--rounded-xl) */
+    border-radius: var(--border-radius);
     padding: 2rem;
     margin-bottom: 2rem;
     color: white;
     overflow: hidden;
     position: relative;
-    box-shadow: var(--shadow-lg);
-    width: 100%;
-    box-sizing: border-box;
-    margin-top: 5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .welcome-banner::before {
@@ -317,7 +314,7 @@
 /* Buttons */
 .btn-primary {
     padding: 0.6rem 1.25rem;
-    background: linear-gradient(to right, var(--primary-color-light), var(--primary-color));
+    background: var(--primary-color);
     border: none;
     border-radius: var(--border-radius);
     color: white;

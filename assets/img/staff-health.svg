@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect x="96" y="96" width="320" height="320" rx="16" fill="#f8f9fa" stroke="#6c757d" stroke-width="4"/>
+  
+  <!-- Top Profile -->
+  <circle cx="176" cy="160" r="40" fill="#e2e8f0"/>
+  <path d="M156 152C156 140.954 164.954 132 176 132C187.046 132 196 140.954 196 152C196 163.046 187.046 172 176 172V188" stroke="#4f46e5" stroke-width="4" stroke-linecap="round"/>
+  <path d="M166 188H186" stroke="#4f46e5" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Calendar and Appointment -->
+  <rect x="256" y="132" width="120" height="80" rx="8" fill="#e2e8f0"/>
+  <rect x="256" y="132" width="120" height="20" rx="8" fill="#4f46e5"/>
+  <path d="M286 142H292" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M302 142H308" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M318 142H324" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M334 142H340" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  
+  <path d="M276 162H284" stroke="#6c757d" stroke-width="2" stroke-linecap="round"/>
+  <path d="M296 162H324" stroke="#6c757d" stroke-width="2" stroke-linecap="round"/>
+  
+  <path d="M276 182H284" stroke="#6c757d" stroke-width="2" stroke-linecap="round"/>
+  <path d="M296 182H344" stroke="#6c757d" stroke-width="2" stroke-linecap="round"/>
+  
+  <path d="M276 202H284" stroke="#6c757d" stroke-width="2" stroke-linecap="round"/>
+  <path d="M296 202H314" stroke="#6c757d" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Health Records Section -->
+  <rect x="136" y="240" width="240" height="24" rx="4" fill="#818cf8" opacity="0.2"/>
+  <path d="M156 252H232" stroke="#4f46e5" stroke-width="4" stroke-linecap="round"/>
+  
+  <rect x="136" y="280" width="240" height="80" rx="4" fill="#e2e8f0" opacity="0.5"/>
+  
+  <path d="M156 300H246" stroke="#6c757d" stroke-width="2" stroke-linecap="round"/>
+  <path d="M156 320H286" stroke="#6c757d" stroke-width="2" stroke-linecap="round"/>
+  <path d="M156 340H266" stroke="#6c757d" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Bottom Buttons -->
+  <rect x="136" y="376" width="60" height="24" rx="12" fill="#4f46e5"/>
+  <rect x="206" y="376" width="60" height="24" rx="12" fill="#818cf8"/>
+  <rect x="276" y="376" width="60" height="24" rx="12" fill="#6366f1"/>
+</svg> 
