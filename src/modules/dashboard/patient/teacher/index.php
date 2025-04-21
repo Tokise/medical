@@ -346,6 +346,6 @@ $healthAnnouncements = $conn->query($announcementsQuery)->fetch_all(MYSQLI_ASSOC
     });
     </script>
     
-    <?php include_once '../../../../../includes/footer.php'; ?>
+
 </body>
 </html>

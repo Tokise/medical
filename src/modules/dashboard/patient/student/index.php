@@ -140,39 +140,7 @@ $role = 'Student';
     <link rel="stylesheet" href="/medical/src/styles/global.css">
     <link rel="stylesheet" href="/medical/src/modules/dashboard/patient/student/styles/student.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        body {
-            padding: 0;
-            margin: 0;
-            overflow-x: hidden;
-            background: #f5f7fb;
-        }
-        .dashboard-header {
-            width: 100%;
-            position: relative;
-            z-index: 100;
-        }
-        .student-dashboard {
-            width: 100%;
-            padding-top: 70px; /* Account for header height */
-            min-height: calc(100vh - 70px);
-        }
-        .health-record-section, 
-        .appointments-section, 
-        .prescriptions-section,
-        .quick-actions-section {
-            height: auto;
-            min-height: 300px;
-        }
-        @media (max-width: 768px) {
-            .health-record-section, 
-            .appointments-section, 
-            .prescriptions-section,
-            .quick-actions-section {
-                min-height: auto;
-            }
-        }
-    </style>
+    
 </head>
 <body>
     

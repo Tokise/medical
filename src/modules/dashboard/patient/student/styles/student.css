@@ -2,7 +2,7 @@
 .student-dashboard {
     padding: 2rem;
     margin-left: 0; /* Remove sidebar margin */
-    background: #f8f9fa; /* Replace var(--gradient-bg-main) with light background */
+    background: var(--bg-light);
     width: 100%;
     box-sizing: border-box;
 }
@@ -10,7 +10,7 @@
 /* Welcome Banner */
 .welcome-banner {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     background: linear-gradient(135deg, #4f46e5, #818cf8);
     border-radius: 10px; /* Replace var(--rounded-xl) */
