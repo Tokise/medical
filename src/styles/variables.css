@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 :root {
     /* Brand Colors */
     --primary-color: #4361ee;
@@ -93,4 +94,101 @@
     --header-height: 60px;
     --sidebar-width: 250px;
     --footer-height: 60px;
+=======
+:root {
+    /* Brand Colors */
+    --primary-color: #4361ee;
+    --primary-color-light: #eaeffd;
+    --primary-color-dark: #3249c0;
+    --secondary-color: #7209b7;
+    --secondary-color-light: #f2e6f9;
+    --secondary-color-dark: #5a078f;
+    
+    /* State Colors */
+    --success-color: #2ecc71;
+    --success-color-light: #e8f8f0;
+    --warning-color: #f39c12;
+    --warning-color-light: #fef5e8;
+    --danger-color: #e74c3c;
+    --danger-color-light: #fdedeb;
+    --info-color: #3498db;
+    --info-color-light: #ebf5fb;
+    
+    /* Background Colors */
+    --bg-white: #ffffff;
+    --bg-light: #f8f9fa;
+    --bg-gray: #eaeaea;
+    --bg-dark: #343a40;
+    --bg-black: #212529;
+    
+    /* Text Colors */
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --text-muted: #6c757d;
+    --text-light: #adb5bd;
+    --text-white: #ffffff;
+    
+    /* Border Colors */
+    --border-light: #dee2e6;
+    --border-medium: #ced4da;
+    --border-dark: #6c757d;
+    
+    /* Shadow Values */
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 1rem 2rem rgba(0, 0, 0, 0.15);
+    
+    /* Spacing Values */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2.5rem;
+    
+    /* Border Radius */
+    --border-radius: 12px;
+    --border-radius-sm: 0.25rem;
+    --border-radius-lg: 0.5rem;
+    --border-radius-pill: 50rem;
+    
+    /* Typography */
+    --font-family: 'Poppins', sans-serif;
+    --font-size-xs: 0.75rem;   /* 12px */
+    --font-size-sm: 0.875rem;  /* 14px */
+    --font-size-md: 1rem;      /* 16px */
+    --font-size-lg: 1.125rem;  /* 18px */
+    --font-size-xl: 1.25rem;   /* 20px */
+    --font-size-xxl: 1.5rem;   /* 24px */
+    
+    /* Font Weights */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-loose: 1.75;
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* Z-index Levels */
+    --z-index-dropdown: 1000;
+    --z-index-sticky: 1020;
+    --z-index-fixed: 1030;
+    --z-index-modal-backdrop: 1040;
+    --z-index-modal: 1050;
+    --z-index-popover: 1060;
+    --z-index-tooltip: 1070;
+    
+    /* Component Specific */
+    --header-height: 60px;
+    --sidebar-width: 250px;
+    --footer-height: 60px;
+>>>>>>> 6555137 (Added my changes)
 }
