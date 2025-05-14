@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 session_start();
 require_once '../../../../../config/config.php';
@@ -351,6 +352,8 @@ $healthAnnouncements = $conn->query($announcementsQuery)->fetch_all(MYSQLI_ASSOC
 </body>
 </html>
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 session_start();
 require_once '../../../../../config/config.php';
@@ -702,4 +705,7 @@ $healthAnnouncements = $conn->query($announcementsQuery)->fetch_all(MYSQLI_ASSOC
 
 </body>
 </html>
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

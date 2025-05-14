@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 // Initialize the session
 session_start();
@@ -510,6 +511,8 @@ if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
 </body>
 </html>
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 // Initialize the session
 session_start();
@@ -1020,4 +1023,7 @@ if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
     </script>
 </body>
 </html>
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

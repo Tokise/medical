@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 session_start();
 require_once '../../../../../config/config.php';
@@ -409,6 +410,8 @@ $role = 'Student';
 </body>
 </html>
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 session_start();
 require_once '../../../../../config/config.php';
@@ -818,4 +821,7 @@ $role = 'Student';
     </script>
 </body>
 </html>
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

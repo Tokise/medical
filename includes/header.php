@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <header class="dashboard-header">
     <div class="header-left">
         <div class="logo-wrapper">
@@ -278,6 +279,8 @@ document.addEventListener('click', function(e) {
 });
 </script>
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <header class="dashboard-header">
     <div class="header-left">
         <div class="logo-wrapper">
@@ -556,4 +559,7 @@ document.addEventListener('click', function(e) {
     }
 });
 </script>
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

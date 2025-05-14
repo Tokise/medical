@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 // Initialize the session
 session_start();
@@ -152,6 +153,8 @@ switch($role) {
     </div>
 </body>
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 // Initialize the session
 session_start();
@@ -304,5 +307,8 @@ switch($role) {
         </div>
     </div>
 </body>
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)
 </html> 

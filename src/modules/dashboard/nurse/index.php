@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 session_start();
 require_once '../../../../config/config.php';
@@ -416,6 +417,8 @@ $inventoryAlerts = $conn->query($inventoryAlertsQuery)->fetch_all(MYSQLI_ASSOC) 
 </body>
 </html>
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 session_start();
 require_once '../../../../config/config.php';
@@ -832,4 +835,7 @@ $inventoryAlerts = $conn->query($inventoryAlertsQuery)->fetch_all(MYSQLI_ASSOC) 
     </script>
 </body>
 </html>
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 @import url('../../../../styles/variables.css');
 @import url('../../../../styles/components.css');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -415,6 +416,8 @@ body {
     color: var(--text-primary);
 }
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 @import url('../../../../styles/variables.css');
 @import url('../../../../styles/components.css');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -830,4 +833,7 @@ body {
     margin-bottom: 1.5rem;
     color: var(--text-primary);
 }
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

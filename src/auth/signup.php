@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 // Initialize the session
 session_start();
@@ -340,6 +341,8 @@ if ($roles_result) {
 </body>
 </html>
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 // Initialize the session
 session_start();
@@ -680,4 +683,7 @@ if ($roles_result) {
     </div>
 </body>
 </html>
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

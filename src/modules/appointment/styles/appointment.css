@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Import Poppins font for consistent typography */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -460,6 +461,8 @@ span{
     }
 }
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 /* Import Poppins font for consistent typography */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -920,4 +923,7 @@ span{
         min-width: 170px;
     }
 }
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 // Include database configuration
 require_once "config/config.php";
@@ -514,6 +515,8 @@ foreach ($all_users as $user) {
 </body>
 </html>
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 // Include database configuration
 require_once "config/config.php";
@@ -1028,4 +1031,7 @@ foreach ($all_users as $user) {
     </div>
 </body>
 </html>
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 session_start();
 require_once '../../../config/config.php';
@@ -420,6 +421,8 @@ if (!empty($appointment_requests)) {
 </html>
 
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 session_start();
 require_once '../../../config/config.php';
@@ -840,5 +843,8 @@ if (!empty($appointment_requests)) {
 </body>
 </html>
 
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)
 </html>

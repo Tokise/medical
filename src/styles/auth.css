@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Import variables and fonts */
 @import url('variables.css');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -358,6 +359,8 @@ body {
     }
 }
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 /* Import variables and fonts */
 @import url('variables.css');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -716,4 +719,7 @@ body {
         padding: 0.75rem;
     }
 }
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

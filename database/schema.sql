@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 -- MedMS Database Schema
 -- Medical Management System for Schools
 
@@ -331,6 +332,8 @@ INSERT INTO medical_supplies (item_name, description, current_quantity, unit, re
 ('Surgical Masks', 'Disposable face masks', 200, 'pieces', 100, 'Healthcare Products Inc.', 0.25);
 
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 -- MedMS Database Schema
 -- Medical Management System for Schools
 
@@ -662,4 +665,7 @@ INSERT INTO medical_supplies (item_name, description, current_quantity, unit, re
 ('Cotton Balls', 'Sterile cotton balls', 150, 'packs', 50, 'Medical Supplies Co.', 1.00),
 ('Surgical Masks', 'Disposable face masks', 200, 'pieces', 100, 'Healthcare Products Inc.', 0.25);
 
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

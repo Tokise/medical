@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 // Initialize the session
 session_start();
@@ -260,6 +261,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 </body>
 </html>
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 // Initialize the session
 session_start();
@@ -520,4 +523,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     </script>
 </body>
 </html>
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 session_start();
 require_once '../../../config/db.php';
@@ -159,6 +160,8 @@ function deleteUser($conn) {
     exit;
 }
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 session_start();
 require_once '../../../config/db.php';
@@ -318,5 +321,8 @@ function deleteUser($conn) {
     header("Location: /medical/src/modules/dashboard/admin/index.php");
     exit;
 }
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)
 ?> 

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <?php
 session_start();
 require_once '../../../../config/config.php';
@@ -204,6 +205,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 =======
+=======
+>>>>>>> 6555137 (Added my changes)
 <?php
 session_start();
 require_once '../../../../config/config.php';
@@ -408,5 +411,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<<<<<<< HEAD
+>>>>>>> 6555137 (Added my changes)
+=======
 >>>>>>> 6555137 (Added my changes)
 <?php require_once '../../includes/footer.php'; ?>
