@@ -214,23 +214,31 @@ Do NOT diagnose serious conditions, prescribe meds beyond OTC guidance, or provi
             const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
                 headers: {
-                    'Authorization': 'Bearer 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',
+                    'Authorization': 'Bearer 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',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ model: 'gpt-3.5-turbo', messages: conversationHistory })
+                body: JSON.stringify({ 
+                    model: 'gpt-3.5-turbo', 
+                    messages: conversationHistory 
+                })
             });
+            
+            if (!res.ok) {
+                throw new Error(`API Error: ${res.status}`);
+            }
+            
             const data = await res.json();
             const reply = data.choices?.[0]?.message?.content || 'Sorry, I didn\'t catch that. Can you rephrase?';
             thinkingBubble.innerHTML = reply;
             conversationHistory.push({ role: 'assistant', content: reply });
         } catch (err) {
-            thinkingBubble.innerHTML = 'Error: ' + err.message;
+            console.error('Error:', err);
+            thinkingBubble.innerHTML = 'Error connecting to the chatbot service. Please try again later.';
         }
     }
 
     sendButton.addEventListener('click', handleSend);
     userInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleSend(); });
-</script>
+  </script>
 </body>
-
 </html>
