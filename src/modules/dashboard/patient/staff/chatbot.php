@@ -247,7 +247,7 @@ Provide specific clinical guidance tailored to school health staff needs. Focus 
             const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
                 headers: {
-                    'Authorization': 'Bearer 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  ',
+                    'Authorization': 'Bearer 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',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ model: 'gpt-3.5-turbo', messages: conversationHistory })
