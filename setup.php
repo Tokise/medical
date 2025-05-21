@@ -138,6 +138,8 @@ foreach ($default_accounts as $account) {
                     'name' => $account['first_name'] . ' ' . $account['last_name'],
                     'school_id' => $school_id
                 ];
+            } else {
+                $setup_log[] = "Error updating account '{$account['username']}': " . mysqli_error($conn);
             }
             
             mysqli_stmt_close($update_stmt);
@@ -176,7 +178,9 @@ foreach ($default_accounts as $account) {
                         $doctor_sql = "INSERT INTO doctors (user_id, license_number, specialization, availability_status) VALUES (?, ?, ?, 'Available')";
                         if ($doctor_stmt = mysqli_prepare($conn, $doctor_sql)) {
                             mysqli_stmt_bind_param($doctor_stmt, "iss", $user_id, $license, $specialization);
-                            mysqli_stmt_execute($doctor_stmt);
+                            if (!mysqli_stmt_execute($doctor_stmt)) {
+                                $setup_log[] = "Error creating doctor record: " . mysqli_error($conn);
+                            }
                             
                             // Add default schedules for doctors
                             $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -184,7 +188,9 @@ foreach ($default_accounts as $account) {
                                 $schedule_sql = "INSERT INTO medical_schedule (user_id, day_of_week, start_time, end_time) VALUES (?, ?, '08:00:00', '17:00:00')";
                                 $schedule_stmt = mysqli_prepare($conn, $schedule_sql);
                                 mysqli_stmt_bind_param($schedule_stmt, "is", $user_id, $day);
-                                mysqli_stmt_execute($schedule_stmt);
+                                if (!mysqli_stmt_execute($schedule_stmt)) {
+                                    $setup_log[] = "Error creating schedule: " . mysqli_error($conn);
+                                }
                                 mysqli_stmt_close($schedule_stmt);
                             }
                             
@@ -200,7 +206,9 @@ foreach ($default_accounts as $account) {
                         $nurse_sql = "INSERT INTO nurses (user_id, license_number, specialization, availability_status) VALUES (?, ?, ?, 'Available')";
                         if ($nurse_stmt = mysqli_prepare($conn, $nurse_sql)) {
                             mysqli_stmt_bind_param($nurse_stmt, "iss", $user_id, $license, $specialization);
-                            mysqli_stmt_execute($nurse_stmt);
+                            if (!mysqli_stmt_execute($nurse_stmt)) {
+                                $setup_log[] = "Error creating nurse record: " . mysqli_error($conn);
+                            }
                             
                             // Add default schedules for nurses
                             $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -208,7 +216,9 @@ foreach ($default_accounts as $account) {
                                 $schedule_sql = "INSERT INTO medical_schedule (user_id, day_of_week, start_time, end_time) VALUES (?, ?, '08:00:00', '17:00:00')";
                                 $schedule_stmt = mysqli_prepare($conn, $schedule_sql);
                                 mysqli_stmt_bind_param($schedule_stmt, "is", $user_id, $day);
-                                mysqli_stmt_execute($schedule_stmt);
+                                if (!mysqli_stmt_execute($schedule_stmt)) {
+                                    $setup_log[] = "Error creating schedule: " . mysqli_error($conn);
+                                }
                                 mysqli_stmt_close($schedule_stmt);
                             }
                             
@@ -217,28 +227,34 @@ foreach ($default_accounts as $account) {
                         break;
                         
                     case 'student':
-                        $student_sql = "INSERT INTO students (user_id) VALUES (?)";
+                        $student_sql = "INSERT INTO students (user_id, blood_type) VALUES (?, 'A+')";
                         if ($student_stmt = mysqli_prepare($conn, $student_sql)) {
                             mysqli_stmt_bind_param($student_stmt, "i", $user_id);
-                            mysqli_stmt_execute($student_stmt);
+                            if (!mysqli_stmt_execute($student_stmt)) {
+                                $setup_log[] = "Error creating student record: " . mysqli_error($conn);
+                            }
                             mysqli_stmt_close($student_stmt);
                         }
                         break;
                         
                     case 'teacher':
-                        $teacher_sql = "INSERT INTO teachers (user_id, date_of_birth, emergency_contact_name, emergency_contact_number, emergency_contact_relationship) VALUES (?, NOW(), 'Not Set', 'Not Set', 'Not Set')";
+                        $teacher_sql = "INSERT INTO teachers (user_id, date_of_birth, emergency_contact_name, emergency_contact_number, emergency_contact_relationship, blood_type) VALUES (?, NOW(), 'Not Set', 'Not Set', 'Not Set', 'A+')";
                         if ($teacher_stmt = mysqli_prepare($conn, $teacher_sql)) {
                             mysqli_stmt_bind_param($teacher_stmt, "i", $user_id);
-                            mysqli_stmt_execute($teacher_stmt);
+                            if (!mysqli_stmt_execute($teacher_stmt)) {
+                                $setup_log[] = "Error creating teacher record: " . mysqli_error($conn);
+                            }
                             mysqli_stmt_close($teacher_stmt);
                         }
                         break;
                         
                     case 'staff':
-                        $staff_sql = "INSERT INTO staff (user_id) VALUES (?)";
+                        $staff_sql = "INSERT INTO staff (user_id, blood_type) VALUES (?, 'A+')";
                         if ($staff_stmt = mysqli_prepare($conn, $staff_sql)) {
                             mysqli_stmt_bind_param($staff_stmt, "i", $user_id);
-                            mysqli_stmt_execute($staff_stmt);
+                            if (!mysqli_stmt_execute($staff_stmt)) {
+                                $setup_log[] = "Error creating staff record: " . mysqli_error($conn);
+                            }
                             mysqli_stmt_close($staff_stmt);
                         }
                         break;
@@ -265,6 +281,162 @@ foreach ($default_accounts as $account) {
 if (!empty($created_accounts)) {
     $message = "Setup completed successfully. Default accounts have been created.";
     $success = true;
+    
+    // Insert default allergy data after users are created
+    $allergy_data = [
+        ['user_id' => 1, 'allergy_name' => 'nuts', 'severity' => 'Mild', 'reaction' => 'Skin rash', 'notes' => 'Allergic to peanuts and tree nuts', 'allergen' => 'nuts'],
+        ['user_id' => 2, 'allergy_name' => 'pollen', 'severity' => 'Moderate', 'reaction' => 'Sneezing and runny nose', 'notes' => 'Seasonal allergies', 'allergen' => 'pollen'],
+        ['user_id' => 3, 'allergy_name' => 'shellfish', 'severity' => 'Severe', 'reaction' => 'Anaphylaxis', 'notes' => 'Requires immediate medical attention', 'allergen' => 'shellfish']
+    ];
+    
+    foreach ($allergy_data as $allergy) {
+        $allergy_sql = "INSERT INTO allergies (user_id, allergy_name, severity, reaction, notes, allergen) VALUES (?, ?, ?, ?, ?, ?)";
+        if ($allergy_stmt = mysqli_prepare($conn, $allergy_sql)) {
+            mysqli_stmt_bind_param(
+                $allergy_stmt,
+                "isssss",
+                $allergy['user_id'],
+                $allergy['allergy_name'],
+                $allergy['severity'],
+                $allergy['reaction'],
+                $allergy['notes'],
+                $allergy['allergen']
+            );
+            
+            if (!mysqli_stmt_execute($allergy_stmt)) {
+                $setup_log[] = "Error creating allergy record: " . mysqli_error($conn);
+            }
+            mysqli_stmt_close($allergy_stmt);
+        }
+    }
+
+    // Insert default doctors data
+    $doctors_data = [
+        [
+            'user_id' => 2, // doctor
+            'specialization' => 'General Medicine',
+            'license_number' => 'MD12345',
+            'availability_status' => 'Available'
+        ]
+    ];
+
+    foreach ($doctors_data as $doctor) {
+        // Check if doctor record already exists
+        $check_sql = "SELECT doctor_id FROM doctors WHERE user_id = ?";
+        $doctor_exists = false;
+        
+        if ($check_stmt = mysqli_prepare($conn, $check_sql)) {
+            mysqli_stmt_bind_param($check_stmt, "i", $doctor['user_id']);
+            mysqli_stmt_execute($check_stmt);
+            mysqli_stmt_store_result($check_stmt);
+            
+            if (mysqli_stmt_num_rows($check_stmt) > 0) {
+                $doctor_exists = true;
+                $setup_log[] = "Doctor record for user ID {$doctor['user_id']} already exists.";
+            }
+            
+            mysqli_stmt_close($check_stmt);
+        }
+        
+        if (!$doctor_exists) {
+            $doctor_sql = "INSERT INTO doctors (user_id, specialization, license_number, availability_status) VALUES (?, ?, ?, ?)";
+            if ($doctor_stmt = mysqli_prepare($conn, $doctor_sql)) {
+                mysqli_stmt_bind_param(
+                    $doctor_stmt,
+                    "isss",
+                    $doctor['user_id'],
+                    $doctor['specialization'],
+                    $doctor['license_number'],
+                    $doctor['availability_status']
+                );
+                
+                if (!mysqli_stmt_execute($doctor_stmt)) {
+                    $setup_log[] = "Error creating doctor record: " . mysqli_error($conn);
+                } else {
+                    $setup_log[] = "Doctor record created successfully for user ID {$doctor['user_id']}.";
+                }
+                mysqli_stmt_close($doctor_stmt);
+            }
+        }
+    }
+
+    // Insert default consultation data
+    $consultation_data = [
+        [
+            'patient_id' => 5, // student
+            'doctor_id' => 2,  // doctor
+            'consultation_date' => '2025-05-28 09:30:00',
+            'symptoms' => NULL,
+            'chief_complaint' => 'Prescription Renewal',
+            'diagnosis' => NULL,
+            'treatment' => NULL,
+            'follow_up_date' => NULL,
+            'notes' => '',
+            'status' => 'Scheduled',
+            'consultation_type_id' => 1
+        ]
+    ];
+
+    foreach ($consultation_data as $consultation) {
+        $consultation_sql = "INSERT INTO consultations (patient_id, doctor_id, consultation_date, symptoms, chief_complaint, diagnosis, treatment, follow_up_date, notes, status, consultation_type_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        if ($consultation_stmt = mysqli_prepare($conn, $consultation_sql)) {
+            mysqli_stmt_bind_param(
+                $consultation_stmt,
+                "iissssssssi",
+                $consultation['patient_id'],
+                $consultation['doctor_id'],
+                $consultation['consultation_date'],
+                $consultation['symptoms'],
+                $consultation['chief_complaint'],
+                $consultation['diagnosis'],
+                $consultation['treatment'],
+                $consultation['follow_up_date'],
+                $consultation['notes'],
+                $consultation['status'],
+                $consultation['consultation_type_id']
+            );
+            
+            if (!mysqli_stmt_execute($consultation_stmt)) {
+                $setup_log[] = "Error creating consultation record: " . mysqli_error($conn);
+            }
+            mysqli_stmt_close($consultation_stmt);
+        }
+    }
+
+    // Insert default medical history data
+    $medical_history_data = [
+        [
+            'user_id' => 4, // teacher
+            'doctor_id' => 1, // admin
+            'condition_name' => 'Pneumonia',
+            'diagnosis_date' => '2025-05-05',
+            'treatment' => 'Biogesics',
+            'is_chronic' => 0,
+            'notes' => ''
+        ]
+    ];
+
+    foreach ($medical_history_data as $history) {
+        $history_sql = "INSERT INTO medical_history (user_id, doctor_id, condition_name, diagnosis_date, treatment, is_chronic, notes) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        if ($history_stmt = mysqli_prepare($conn, $history_sql)) {
+            mysqli_stmt_bind_param(
+                $history_stmt,
+                "iisssis",
+                $history['user_id'],
+                $history['doctor_id'],
+                $history['condition_name'],
+                $history['diagnosis_date'],
+                $history['treatment'],
+                $history['is_chronic'],
+                $history['notes']
+            );
+            
+            if (!mysqli_stmt_execute($history_stmt)) {
+                $setup_log[] = "Error creating medical history record: " . mysqli_error($conn);
+            }
+            mysqli_stmt_close($history_stmt);
+        }
+    }
 }
 
 // Get all users from the database

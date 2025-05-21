@@ -357,6 +357,112 @@ $page_title = "Admin Dashboard";
     <!-- Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+        .admin-dashboard {
+            padding: 2.5rem 2rem 2rem 2rem;
+            margin-top: 5rem;
+            min-height: 100vh;
+            background: #f8f9fb;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 1.5rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 0;
+        }
+        .stat-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .stat-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #555;
+        }
+        .stat-icon {
+            font-size: 1.5rem;
+            background: #f0f4ff;
+            color: #3b82f6;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-value {
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 0.5rem;
+        }
+        .stat-change {
+            font-size: 0.95rem;
+            margin-top: 0.2rem;
+        }
+        .stat-change.positive { color: #22c55e; }
+        .stat-change.negative { color: #ef4444; }
+        .btn.btn-primary.btn-sm.mt-2 { margin-top: 1rem !important; }
+        .activity-section, .quick-actions, .inventory-table-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 1.5rem 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 0.7rem;
+        }
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #222;
+        }
+        .table-responsive { width: 100%; overflow-x: auto; }
+        .data-table th, .data-table td {
+            padding: 0.7rem 1rem;
+        }
+        .data-table th {
+            background: #f8f9fa;
+            color: #333;
+        }
+        .data-table tr:hover { background: #f4f7fa; }
+        .badge-status {
+            border-radius: 12px;
+            padding: 0.3em 0.8em;
+            font-size: 0.95em;
+            font-weight: 600;
+        }
+        .badge-success { background: #22c55e22; color: #22c55e; }
+        .badge-primary { background: #3b82f622; color: #3b82f6; }
+        .badge-danger { background: #ef444422; color: #ef4444; }
+        .badge-warning { background: #facc1522; color: #facc15; }
+        @media (max-width: 900px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .admin-dashboard { padding: 1rem; }
+        }
+    </style>
 </head>
 <body>
     <?php include_once "../../../../includes/header.php"; ?>
@@ -424,97 +530,53 @@ $page_title = "Admin Dashboard";
                     <span>Registered students</span>
                 </div>
             </div>
+      
             
             <div class="stat-card">
                 <div class="stat-header">
-                    <h4 class="stat-title">Appointments</h4>
+                    <h4 class="stat-title">Inventory</h4>
                     <div class="stat-icon">
-                        <i class="fas fa-calendar-check"></i>
+                        <i class="fas fa-boxes"></i>
                     </div>
                 </div>
-                <h2 class="stat-value"><?php echo $stats['appointments']; ?></h2>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>Total appointments</span>
+                <h2 class="stat-value"><?php echo $stats['inventory']['total_items']; ?></h2>
+                <div class="stat-change <?php echo $stats['inventory']['low_stock'] > 0 ? 'negative' : 'positive'; ?>">
+                    <i class="fas fa-<?php echo $stats['inventory']['low_stock'] > 0 ? 'exclamation-triangle' : 'check'; ?>"></i>
+                    <span><?php echo $stats['inventory']['low_stock'] > 0 ? 'Low stock items' : 'All stocked'; ?></span>
                 </div>
+                <a href="/medical/src/modules/dashboard/admin/inventory_management.php" class="btn btn-primary btn-sm mt-2" style="width:100%;">Manage Inventory</a>
             </div>
         </div>
 
         <div class="row">
-            <!-- Recent Appointments -->
-            <div class="col-lg-8">
-                <div class="activity-section">
-                    <div class="section-header">
-                        <h3 class="section-title">Recent Appointments</h3>
-                        <a href="../appointment/list.php" class="btn btn-primary btn-sm">View All</a>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Patient</th>
-                                    <th>Doctor</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if(!empty($recent_appointments)): ?>
-                                <?php foreach($recent_appointments as $appointment): ?>
-                                <tr>
-                                    <td><?php echo format_date($appointment['appointment_date'], 'M d, Y'); ?></td>
-                                    <td><?php echo $appointment['patient_name']; ?></td>
-                                    <td><?php echo $appointment['staff_name']; ?></td>
-                                    <td>
-                                        <span class="badge-status badge-<?php echo $appointment['status'] == 'Completed' ? 'success' : 
-                                            ($appointment['status'] == 'Scheduled' ? 'primary' : 
-                                            ($appointment['status'] == 'Cancelled' ? 'danger' : 'warning')); ?>">
-                                            <?php echo ucfirst($appointment['status']); ?>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                                <?php else: ?>
-                                <tr>
-                                    <td colspan="4" class="text-center">No recent appointments</td>
-                                </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- Inventory Status -->
-                <div class="activity-section">
+                <!-- Inventory Status (real-time) -->
+                <div class="activity-section" id="inventory-status-section">
                     <div class="section-header">
                         <h3 class="section-title">Inventory Status</h3>
-                        <a href="../inventory/list.php" class="btn btn-primary btn-sm">Manage Inventory</a>
                     </div>
-                    
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <div class="stat-card" style="margin-bottom:0">
                                 <p class="stat-title">Total Items</p>
-                                <h3 class="stat-value"><?php echo $stats['inventory']['total_items']; ?></h3>
+                                <h3 class="stat-value" id="inv-total-items">0</h3>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat-card" style="margin-bottom:0">
                                 <p class="stat-title">Low Stock</p>
-                                <h3 class="stat-value"><?php echo $stats['inventory']['low_stock']; ?></h3>
+                                <h3 class="stat-value" id="inv-low-stock">0</h3>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat-card" style="margin-bottom:0">
                                 <p class="stat-title">Out of Stock</p>
-                                <h3 class="stat-value"><?php echo $stats['inventory']['out_of_stock']; ?></h3>
+                                <h3 class="stat-value" id="inv-out-stock">0</h3>
                             </div>
                         </div>
                     </div>
-                        
                     <h6 class="mb-3">Low Stock Items</h6>
                     <div class="table-responsive">
-                        <table class="data-table">
+                        <table class="data-table" id="low-stock-table">
                             <thead>
                                 <tr>
                                     <th>Item</th>
@@ -524,20 +586,7 @@ $page_title = "Admin Dashboard";
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if(!empty($low_stock_items)): ?>
-                                <?php foreach($low_stock_items as $item): ?>
-                                <tr>
-                                    <td><?php echo $item['name']; ?></td>
-                                    <td><?php echo $item['category']; ?></td>
-                                    <td><?php echo $item['quantity']; ?></td>
-                                    <td><?php echo $item['min_quantity']; ?></td>
-                                </tr>
-                                <?php endforeach; ?>
-                                <?php else: ?>
-                                <tr>
-                                    <td colspan="4" class="text-center">No low stock items</td>
-                                </tr>
-                                <?php endif; ?>
+                                <!-- Low stock items will be loaded here via AJAX -->
                             </tbody>
                         </table>
                     </div>
@@ -555,34 +604,36 @@ $page_title = "Admin Dashboard";
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
+                <!-- Add Inventory Trends Chart -->
                 <div class="activity-section">
                     <div class="section-header">
-                        <h3 class="section-title">Quick Actions</h3>
+                        <h3 class="section-title">Inventory Trends</h3>
                     </div>
-                    <div class="quick-actions">
-                        <a href="../user/add.php" class="action-card">
-                            <div class="action-icon">
-                                <i class="fas fa-user-plus"></i>
-                            </div>
-                            <h4 class="action-title">Add User</h4>
-                            <p class="action-description">Create a new user account</p>
-                        </a>
-                   
-                        <a href="../inventory/add.php" class="action-card">
-                            <div class="action-icon">
-                                <i class="fas fa-pills"></i>
-                            </div>
-                            <h4 class="action-title">Add Inventory</h4>
-                            <p class="action-description">Add new supplies</p>
-                        </a>
-                        <a href="../reports/index.php" class="action-card">
-                            <div class="action-icon">
-                                <i class="fas fa-chart-bar"></i>
-                            </div>
-                            <h4 class="action-title">Generate Reports</h4>
-                            <p class="action-description">Create system reports</p>
-                        </a>
+                    <div class="chart-container" style="position: relative; height:250px;">
+                        <canvas id="inventory-trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Add Inventory Table -->
+                <div class="activity-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Inventory Items</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="dashboard-inventory-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Min Quantity</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Inventory data will be loaded here via AJAX -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -641,6 +692,66 @@ $page_title = "Admin Dashboard";
                 }
             }
         );
+
+        // Real-time inventory chart and table update
+        function fetchInventoryData() {
+            fetch('/medical/api/inventory_dashboard.php')
+                .then(res => res.json())
+                .then(data => {
+                    // Update chart
+                    if(window.inventoryTrendChart) window.inventoryTrendChart.destroy();
+                    const ctx = document.getElementById('inventory-trend-chart').getContext('2d');
+                    window.inventoryTrendChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Total Items',
+                                data: data.totals,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59,130,246,0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                    // Update table
+                    const tbody = document.querySelector('#dashboard-inventory-table tbody');
+                    tbody.innerHTML = data.items.map(item => `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td>${item.category}</td>
+                            <td>${item.quantity}</td>
+                            <td>${item.min_quantity}</td>
+                            <td>${item.status}</td>
+                        </tr>
+                    `).join('');
+                    // Update Inventory Status
+                    let total = 0, low = 0, out = 0;
+                    let lowStockRows = [];
+                    data.items.forEach(item => {
+                        total++;
+                        if(item.status === 'Out of Stock') out++;
+                        else if(item.status === 'Low') low++;
+                        if(item.status === 'Low') {
+                            lowStockRows.push(`
+                                <tr>
+                                    <td>${item.name}</td>
+                                    <td>${item.category}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>${item.min_quantity}</td>
+                                </tr>
+                            `);
+                        }
+                    });
+                    document.getElementById('inv-total-items').textContent = total;
+                    document.getElementById('inv-low-stock').textContent = low;
+                    document.getElementById('inv-out-stock').textContent = out;
+                    document.querySelector('#low-stock-table tbody').innerHTML = lowStockRows.join('') || '<tr><td colspan="4" class="text-center">No low stock items</td></tr>';
+                });
+        }
+        setInterval(fetchInventoryData, 5000); // Update every 5 seconds
+        fetchInventoryData();
     </script>
 
   
@@ -648,7 +759,3 @@ $page_title = "Admin Dashboard";
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-<<<<<<< HEAD
->>>>>>> 6555137 (Added my changes)
-=======
->>>>>>> 6555137 (Added my changes)

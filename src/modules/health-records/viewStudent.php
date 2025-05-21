@@ -158,10 +158,22 @@ if (isset($_POST['add_condition'])) {
     $notes = $_POST['condition_notes'];
     
     try {
-        $insertQuery = "INSERT INTO medical_history (user_id, condition_name, diagnosis_date, notes) 
-                       VALUES (?, ?, ?, ?)";
+        // Find a valid doctor_id (for now, just pick the first doctor)
+        $doctor_id = null;
+        $doctorQuery = "SELECT user_id FROM users WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'Doctor') LIMIT 1";
+        $doctorResult = $conn->query($doctorQuery);
+        if ($doctorResult && $doctorResult->num_rows > 0) {
+            $doctorRow = $doctorResult->fetch_assoc();
+            $doctor_id = $doctorRow['user_id'];
+        } else {
+            // fallback: just use the current user (not ideal, but prevents error)
+            $doctor_id = $user_id;
+        }
+
+        $insertQuery = "INSERT INTO medical_history (user_id, condition_name, diagnosis_date, notes, doctor_id) 
+                       VALUES (?, ?, ?, ?, ?)";
         $insertStmt = $conn->prepare($insertQuery);
-        $insertStmt->bind_param("isss", $user_id, $condition, $diagnosis_date, $notes);
+        $insertStmt->bind_param("isssi", $user_id, $condition, $diagnosis_date, $notes, $doctor_id);
         
         if ($insertStmt->execute()) {
             $successMessage = "Medical condition added successfully!";
@@ -182,7 +194,7 @@ if (isset($_POST['delete_condition'])) {
     $condition_id = $_POST['condition_id'];
     
     try {
-        $deleteQuery = "DELETE FROM medical_history WHERE id = ? AND user_id = ?";
+        $deleteQuery = "DELETE FROM medical_history WHERE history_id = ? AND user_id = ?";
         $deleteStmt = $conn->prepare($deleteQuery);
         $deleteStmt->bind_param("ii", $condition_id, $user_id);
         
@@ -232,7 +244,7 @@ if (isset($_POST['delete_allergy'])) {
     $allergy_id = $_POST['allergy_id'];
     
     try {
-        $deleteQuery = "DELETE FROM allergies WHERE id = ? AND user_id = ?";
+        $deleteQuery = "DELETE FROM allergies WHERE allergy_id = ? AND user_id = ?";
         $deleteStmt = $conn->prepare($deleteQuery);
         $deleteStmt->bind_param("ii", $allergy_id, $user_id);
         
@@ -637,7 +649,7 @@ $role = 'Student';
                             </div>
                             <div class="record-actions">
                                 <form method="POST" action="" onsubmit="return confirm('Are you sure you want to delete this condition?');">
-                                    <input type="hidden" name="condition_id" value="<?= $condition['id'] ?>">
+                                    <input type="hidden" name="condition_id" value="<?= isset($condition['condition_id']) ? $condition['condition_id'] : (isset($condition['id']) ? $condition['id'] : '') ?>">
                                     <button type="submit" name="delete_condition" class="delete-btn">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -698,7 +710,7 @@ $role = 'Student';
                             <div class="record-item-content">
                                 <h4>
                                     <?= htmlspecialchars($allergy['allergen']) ?>
-                                    <span class="badge badge-<?= strtolower($allergy['severity']) ?>"><?= $allergy['severity'] ?></span>
+                                    <span class="badge badge-<?= strtolower($allergy['severity']) ?>" style="<?= strtolower($allergy['severity']) === 'severe' ? 'color: #c62828; font-weight: bold;' : '' ?>"><?= $allergy['severity'] ?></span>
                                 </h4>
                                 <p><strong>Reaction:</strong> <?= htmlspecialchars($allergy['reaction']) ?></p>
                                 <?php if (!empty($allergy['notes'])): ?>
@@ -707,7 +719,7 @@ $role = 'Student';
                             </div>
                             <div class="record-actions">
                                 <form method="POST" action="" onsubmit="return confirm('Are you sure you want to delete this allergy?');">
-                                    <input type="hidden" name="allergy_id" value="<?= $allergy['id'] ?>">
+                                    <input type="hidden" name="allergy_id" value="<?= isset($allergy['allergy_id']) ? $allergy['allergy_id'] : (isset($allergy['id']) ? $allergy['id'] : '') ?>">
                                     <button type="submit" name="delete_allergy" class="delete-btn">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -726,6 +738,7 @@ $role = 'Student';
             </a>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Add animation classes after DOM is loaded
@@ -808,6 +821,35 @@ $role = 'Student';
                 }, 2000);
             }
         }
+        
+        // SweetAlert2 for delete confirmation
+        document.querySelectorAll('form[onsubmit]').forEach(form => {
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+                return false;
+            };
+        });
+        
+        // Show success popup only once after deletion
+        <?php if (!empty($successMessage)): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: <?= json_encode($successMessage) ?>
+        });
+        <?php endif; ?>
     });
 </script>
 </body>

@@ -22,9 +22,20 @@
                 // Admin-specific menu items
                 if ($userRole === 'admin'): 
                 ?>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'user') !== false ? 'active' : ''; ?>" title="User Management">
-                        <a href="/medical/src/modules/dashboard/user/add.php">
-                            <i class="fas fa-users"></i>
+                
+                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'staff_management') !== false ? 'active' : ''; ?>" title="Staff Management">
+                        <a href="/medical/src/modules/dashboard/admin/staff_management.php">
+                            <i class="fas fa-user-md"></i>
+                        </a>
+                    </li>
+                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'schedule_management') !== false ? 'active' : ''; ?>" title="Schedule Management">
+                        <a href="/medical/src/modules/dashboard/admin/schedule_management.php">
+                            <i class="fas fa-calendar-alt"></i>
+                        </a>
+                    </li>
+                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'inventory_management') !== false ? 'active' : ''; ?>" title="Inventory">
+                        <a href="/medical/src/modules/dashboard/admin/inventory_management.php">
+                            <i class="fas fa-box"></i>
                         </a>
                     </li>
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'reports') !== false ? 'active' : ''; ?>" title="Reports">
@@ -35,134 +46,55 @@
                   
                 <?php
                 // Doctor-specific menu items
-                elseif ($userRole === 'doctor'):
+                elseif (in_array($userRole, ['doctor', 'nurse'])):
                 ?>
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'appointment') !== false ? 'active' : ''; ?>" title="Appointments">
-                        <a href="/medical/src/modules/appointment/appointment.php">
+                        <a href="/medical/src/modules/dashboard/medical-staff/appointment.php">
                             <i class="fas fa-calendar-check"></i>
                         </a>
                     </li>
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'consultation') !== false ? 'active' : ''; ?>" title="Consultations">
-                        <a href="/medical/src/modules/consultation/list.php">
+                        <a href="/medical/src/modules/dashboard/medical-staff/consultation.php">
                             <i class="fas fa-stethoscope"></i>
                         </a>
                     </li>
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'prescription') !== false ? 'active' : ''; ?>" title="Prescriptions">
-                        <a href="/medical/src/modules/prescription/create.php">
+                        <a href="/medical/src/modules/dashboard/medical-staff/prescription.php">
                             <i class="fas fa-prescription"></i>
                         </a>
                     </li>
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'chatbot') !== false ? 'active' : ''; ?>" title="AI Chatbot">
-                        <a href="/medical/src/modules/chat/bot.php">
+                        <a href="/medical/src/modules/dashboard/medical-staff/chatbot.php">
                             <i class="fas fa-robot"></i>
                         </a>
                     </li>
                 
                 <?php
-                // Nurse-specific menu items
-                elseif ($userRole === 'nurse'):
+                
+                // Unified patient menu items (student, teacher, staff)
+                elseif (in_array($userRole, ['student', 'teacher', 'staff'])):
                 ?>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'walkin') !== false ? 'active' : ''; ?>" title="Walk-ins">
-                        <a href="/medical/src/modules/walkin/index.php">
-                            <i class="fas fa-walking"></i>
-                        </a>
-                    </li>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'chatbot') !== false ? 'active' : ''; ?>" title="AI Chatbot">
-                        <a href="/medical/src/modules/chat/bot.php">
-                            <i class="fas fa-robot"></i>
-                        </a>
-                    </li>
-               
-                <?php
-                // Student user menus
-                elseif ($userRole === 'student'):
-                ?>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'appointment') !== false ? 'active' : ''; ?>" title="Appointments">
-                        <a href="/medical/src/modules/dashboard/patient/appointments/schedule.php">
-                            <i class="fas fa-calendar-check"></i>
-                        </a>
-                    </li>
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'prescription') !== false ? 'active' : ''; ?>" title="Prescriptions">
-                        <a href="/medical/src/modules/dashboard/patient/student/prescription.php">
+                        <a href="/medical/src/modules/dashboard/patient/user/prescription.php">
                             <i class="fas fa-prescription"></i>
                         </a>
                     </li>
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'consultation') !== false ? 'active' : ''; ?>" title="Consultations">
-                        <a href="/medical/src/modules/dashboard/patient/student/consultation.php">
+                        <a href="/medical/src/modules/dashboard/patient/user/consultation.php">
                             <i class="fas fa-stethoscope"></i>
                         </a>
                     </li>
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'chatbot') !== false ? 'active' : ''; ?>" title="AI Chatbot">
-                        <a href="/medical/src/modules/dashboard/patient/student/chatbot.php">
+                        <a href="/medical/src/modules/dashboard/patient/user/chatbot.php">
                             <i class="fas fa-robot"></i>
                         </a>
                     </li>
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'history') !== false ? 'active' : ''; ?>" title="Medical History">
-                        <a href="/medical/src/modules/dashboard/patient/student/history.php">
+                        <a href="/medical/src/modules/dashboard/patient/user/history.php">
                             <i class="fas fa-history"></i>
                         </a>
                     </li>
                 
-                <?php
-                // Teacher user menus 
-                elseif ($userRole === 'teacher'):
-                ?>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'appointment') !== false ? 'active' : ''; ?>" title="Appointments">
-                        <a href="/medical/src/modules/dashboard/patient/teacher/appointment.php">
-                            <i class="fas fa-calendar-check"></i>
-                        </a>
-                    </li>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'prescription') !== false ? 'active' : ''; ?>" title="Prescriptions">
-                        <a href="/medical/src/modules/dashboard/patient/teacher/prescription.php">
-                            <i class="fas fa-prescription"></i>
-                        </a>
-                    </li>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'consultation') !== false ? 'active' : ''; ?>" title="Consultations">
-                        <a href="/medical/src/modules/dashboard/patient/teacher/consultation.php">
-                            <i class="fas fa-stethoscope"></i>
-                        </a>
-                    </li>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'chatbot') !== false ? 'active' : ''; ?>" title="AI Chatbot">
-                        <a href="/medical/src/modules/dashboard/patient/teacher/chatbot.php">
-                            <i class="fas fa-robot"></i>
-                        </a>
-                    </li>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'history') !== false ? 'active' : ''; ?>" title="Medical History">
-                        <a href="/medical/src/modules/dashboard/patient/teacher/history.php">
-                            <i class="fas fa-history"></i>
-                        </a>
-                    </li>
-                 
-                <?php
-                // Staff user menus
-                elseif ($userRole === 'staff'):
-                ?>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'appointment') !== false ? 'active' : ''; ?>" title="Appointments">
-                        <a href="/medical/src/modules/dashboard/patient/staff/appointment.php">
-                            <i class="fas fa-calendar-check"></i>
-                        </a>
-                    </li>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'prescription') !== false ? 'active' : ''; ?>" title="Prescriptions">
-                        <a href="/medical/src/modules/dashboard/patient/staff/prescription.php">
-                            <i class="fas fa-prescription"></i>
-                        </a>
-                    </li>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'consultation') !== false ? 'active' : ''; ?>" title="Consultations">
-                        <a href="/medical/src/modules/dashboard/patient/staff/consultation.php">
-                            <i class="fas fa-stethoscope"></i>
-                        </a>
-                    </li>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'chatbot') !== false ? 'active' : ''; ?>" title="AI Chatbot">
-                        <a href="/medical/src/modules/dashboard/patient/staff/chatbot.php">
-                            <i class="fas fa-robot"></i>
-                        </a>
-                    </li>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'history') !== false ? 'active' : ''; ?>" title="Medical History">
-                        <a href="/medical/src/modules/dashboard/patient/staff/history.php">
-                            <i class="fas fa-history"></i>
-                        </a>
-                    </li>
-                   
                 <?php endif; ?>
             </ul>
         </div>

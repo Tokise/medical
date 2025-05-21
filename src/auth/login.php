@@ -26,7 +26,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Validate credentials
     if(empty($username_err) && empty($password_err)){
         // Prepare a select statement - check both username and school_id fields
-        $sql = "SELECT user_id, username, password, role_id, school_id FROM users WHERE username = ? OR school_id = ?";
+        $sql = "SELECT user_id, username, password, role_id, school_id, first_name, last_name FROM users WHERE username = ? OR school_id = ?";
         
         if($stmt = mysqli_prepare($conn, $sql)){
             // Bind variables to the prepared statement as parameters
@@ -43,7 +43,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 // Check if username exists, if yes then verify password
                 if(mysqli_stmt_num_rows($stmt) == 1){                    
                     // Bind result variables
-                    mysqli_stmt_bind_result($stmt, $id, $username, $hashed_password, $role_id, $school_id);
+                    mysqli_stmt_bind_result($stmt, $id, $username, $hashed_password, $role_id, $school_id, $first_name, $last_name);
                     if(mysqli_stmt_fetch($stmt)){
                         if(password_verify($password, $hashed_password)){
                             // Password is correct, so start a new session
@@ -58,20 +58,20 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                             mysqli_stmt_fetch($role_stmt);
                             mysqli_stmt_close($role_stmt);
                             
-                            // Get user details
-                            $user_query = "SELECT first_name, last_name FROM users WHERE user_id = ?";
-                            $user_stmt = mysqli_prepare($conn, $user_query);
-                            mysqli_stmt_bind_param($user_stmt, "i", $id);
-                            mysqli_stmt_execute($user_stmt);
-                            mysqli_stmt_bind_result($user_stmt, $first_name, $last_name);
-                            mysqli_stmt_fetch($user_stmt);
-                            mysqli_stmt_close($user_stmt);
+                            // Log login activity
+                            $log_query = "INSERT INTO system_logs (user_id, action, description, ip_address) VALUES (?, 'Login', 'User logged in using school ID', ?)";
+                            $log_stmt = mysqli_prepare($conn, $log_query);
+                            $ip = $_SERVER['REMOTE_ADDR'];
+                            mysqli_stmt_bind_param($log_stmt, "is", $id, $ip);
+                            mysqli_stmt_execute($log_stmt);
+                            mysqli_stmt_close($log_stmt);
                             
                             // Store data in session variables
                             $_SESSION["loggedin"] = true;
                             $_SESSION["id"] = $id;
-                            $_SESSION["username"] = $username;
+                            $_SESSION["user_id"] = $id;
                             $_SESSION["school_id"] = $school_id;
+                            $_SESSION["username"] = $username;
                             $_SESSION["role"] = strtolower($role_name);
                             $_SESSION["first_name"] = $first_name;
                             $_SESSION["last_name"] = $last_name;
@@ -83,19 +83,19 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                                     header("location: ../modules/dashboard/admin/index.php");
                                     break;
                                 case 'doctor':
-                                    header("location: ../modules/dashboard/doctor/index.php");
+                                    header("location: ../modules/dashboard/medical-staff/index.php");
                                     break;
                                 case 'nurse':
-                                    header("location: ../modules/dashboard/nurse/index.php");
+                                    header("location: ../modules/dashboard/medical-staff/index.php");
                                     break;
                                 case 'student':
-                                    header("location: ../modules/dashboard/patient/student/index.php");
+                                    header("location: ../modules/dashboard/patient/user/index.php");
                                     break;
                                 case 'teacher':
-                                    header("location: ../modules/dashboard/patient/teacher/index.php");
+                                    header("location: ../modules/dashboard/patient/user/index.php");
                                     break;
                                 case 'staff':
-                                    header("location: ../modules/dashboard/patient/staff/index.php");
+                                    header("location: ../modules/dashboard/patient/user/index.php");
                                     break;
                                 default:
                                     header("location: ../modules/dashboard/index.php");
@@ -103,12 +103,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                             exit;
                         } else{
                             // Password is not valid, display a generic error message
-                            $login_err = "Invalid username or password.";
+                            $login_err = "Invalid school ID or password.";
                         }
                     }
                 } else{
                     // Username doesn't exist, display a generic error message
-                    $login_err = "Invalid username or password.";
+                    $login_err = "Invalid school ID or password.";
                 }
             } else{
                 $login_err = "Oops! Something went wrong. Please try again later.";
@@ -178,8 +178,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
                 <div class="form-group">
-                    <label for="username"><i class="fas fa-user"></i> Username or School ID</label>
-                    <input type="text" name="username" id="username" class="form-control <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $username; ?>" placeholder="Enter your Username or School ID">
+                    <label for="username"><i class="fas fa-id-card"></i> School ID</label>
+                    <input type="text" name="username" id="username" class="form-control <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $username; ?>" placeholder="Enter your School ID">
+                    <small class="form-text text-muted">You can also use your username if you don't remember your School ID</small>
                     <?php if(!empty($username_err)): ?>
                         <span class="invalid-feedback"><i class="fas fa-exclamation-circle"></i> <?php echo $username_err; ?></span>
                     <?php endif; ?>
