@@ -167,16 +167,14 @@ function get_recent_prescriptions($doctor_id, $limit = 5) {
     global $conn;
     $prescriptions = [];
     
-    $sql = "SELECT p.prescription_id, p.issue_date as prescription_date, p.status,
-                   CONCAT(u.first_name, ' ', u.last_name) as patient_name,
-                   GROUP_CONCAT(m.name) as medications
-            FROM prescriptions p 
-            JOIN users u ON p.user_id = u.user_id 
+    $sql = "SELECT p.prescription_id, p.issue_date as prescription_date, pm.patient_status,
+                   CONCAT(u.first_name, ' ', u.last_name) as patient_name
+            FROM prescriptions p
+            JOIN users u ON p.user_id = u.user_id
             LEFT JOIN prescription_medications pm ON p.prescription_id = pm.prescription_id
-            LEFT JOIN medications m ON pm.medication_id = m.medication_id
-            WHERE p.doctor_id = ? 
+            WHERE p.doctor_id = ?
             GROUP BY p.prescription_id
-            ORDER BY p.issue_date DESC 
+            ORDER BY p.issue_date DESC
             LIMIT ?";
             
     if($stmt = mysqli_prepare($conn, $sql)){
@@ -189,8 +187,7 @@ function get_recent_prescriptions($doctor_id, $limit = 5) {
                 'id' => $row['prescription_id'],
                 'date' => $row['prescription_date'],
                 'patient_name' => $row['patient_name'],
-                'medications' => $row['medications'],
-                'status' => $row['status']
+                'patient_status' => $row['patient_status']
             ];
         }
         mysqli_stmt_close($stmt);
@@ -308,7 +305,7 @@ $page_title = "Doctor Dashboard";
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
-                    <h4 class="stat-title">Today's Appointments</h4>
+                    <h4 class="stat-title">Today Consultations Appointments</h4>
                     <div class="stat-icon">
                         <i class="fas fa-calendar-check"></i>
                     </div>
@@ -348,19 +345,6 @@ $page_title = "Doctor Dashboard";
                 </div>
             </div>
             
-            <div class="stat-card">
-                <div class="stat-header">
-                    <h4 class="stat-title">Total Patients</h4>
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                </div>
-                <h2 class="stat-value"><?php echo $total_patients; ?></h2>
-                <div class="stat-change positive">
-                    <i class="fas fa-user-injured"></i>
-                    <span>Under your care</span>
-                </div>
-            </div>
             
             <div class="stat-card">
                 <div class="stat-header">
@@ -384,7 +368,7 @@ $page_title = "Doctor Dashboard";
                 
                 <div class="activity-section">
                     <div class="section-header">
-                        <h3 class="section-title">Today's Staff Schedule</h3>
+                        <h3 class="section-title">Today's Schedule</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table">
@@ -414,43 +398,7 @@ $page_title = "Doctor Dashboard";
                     </div>
                 </div>
                 
-                <div class="activity-section">
-                    <div class="section-header">
-                        <h3 class="section-title">Recent Medical Records</h3>
-                        <a href="../../records/doctor-records.php" class="btn btn-primary btn-sm">View All</a>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Patient</th>
-                                    <th>Diagnosis</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if(!empty($recent_records)): ?>
-                                <?php foreach($recent_records as $record): ?>
-                                <tr>
-                                    <td><?php echo format_date($record['date']); ?></td>
-                                    <td><?php echo $record['patient_name']; ?></td>
-                                    <td><?php echo htmlspecialchars(substr($record['diagnosis'], 0, 50)) . "..."; ?></td>
-                                    <td>
-                                        <a href="../../records/view.php?id=<?php echo $record['id']; ?>" class="btn btn-sm btn-outline"><i class="fas fa-eye"></i></a>
-                                        <a href="../../records/edit.php?id=<?php echo $record['id']; ?>" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                                <?php else: ?>
-                                <tr>
-                                    <td colspan="4" class="text-center">No medical records found</td>
-                                </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                
 
                 <!-- Recent Prescriptions Section -->
                 <div class="activity-section">
@@ -465,8 +413,7 @@ $page_title = "Doctor Dashboard";
                                     <th>Date</th>
                                     <th>Patient</th>
                                     <th>Medications</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>Patient Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -479,7 +426,7 @@ $page_title = "Doctor Dashboard";
                                         <?php
                                         // Fetch medication details for this prescription
                                         $meds = [];
-                                        $sql = "SELECT m.name, pm.dosage, pm.frequency, pm.duration FROM prescription_medications pm JOIN medications m ON pm.medication_id = m.medication_id WHERE pm.prescription_id = ?";
+                                        $sql = "SELECT COALESCE(pm.medication_name, m.name) as name, pm.dosage, pm.frequency, pm.duration FROM prescription_medications pm LEFT JOIN medications m ON pm.medication_id = m.medication_id WHERE pm.prescription_id = ?";
                                         $stmt = $conn->prepare($sql);
                                         $stmt->bind_param("i", $prescription['id']);
                                         $stmt->execute();
@@ -494,17 +441,14 @@ $page_title = "Doctor Dashboard";
                                         ?>
                                     </td>
                                     <td>
-                                        <span class="badge-status badge-<?php echo $prescription['status'] == 'Completed' ? 'success' : 
-                                            ($prescription['status'] == 'Pending' ? 'warning' : 
-                                            ($prescription['status'] == 'Cancelled' ? 'danger' : 'primary')); ?>">
-                                            <?php echo ucfirst($prescription['status']); ?>
+                                        <span class="badge-status badge-<?php echo $prescription['patient_status'] == 'Completed' ? 'success' :
+                                            ($prescription['patient_status'] == 'Taken' ? 'primary' :
+                                            ($prescription['patient_status'] == 'Skipped' ? 'danger' :
+                                            ($prescription['patient_status'] == 'Missed' ? 'warning' : 'secondary'))); ?>">
+                                            <?php echo htmlspecialchars($prescription['patient_status'] ?? 'N/A'); ?>
                                         </span>
                                     </td>
-                                    <td>
-                                        <a href="../../prescription/view.php?id=<?php echo $prescription['id']; ?>" class="btn btn-sm btn-outline"><i class="fas fa-eye"></i></a>
-                                        <a href="../../prescription/edit.php?id=<?php echo $prescription['id']; ?>" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>
-                                        <a href="../../prescription/print.php?id=<?php echo $prescription['id']; ?>" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-print"></i></a>
-                                    </td>
+                                    
                                 </tr>
                                 <?php endforeach; ?>
                                 <?php else: ?>
@@ -559,7 +503,7 @@ $page_title = "Doctor Dashboard";
                 <!-- Upcoming Staff Schedules -->
                 <div class="activity-section">
                     <div class="section-header">
-                        <h3 class="section-title">Upcoming Staff Schedules</h3>
+                        <h3 class="section-title">Upcoming Schedules</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table">

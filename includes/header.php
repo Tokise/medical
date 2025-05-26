@@ -48,11 +48,7 @@
                 // Doctor-specific menu items
                 elseif (in_array($userRole, ['doctor', 'nurse'])):
                 ?>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'appointment') !== false ? 'active' : ''; ?>" title="Appointments">
-                        <a href="/medical/src/modules/dashboard/medical-staff/appointment.php">
-                            <i class="fas fa-calendar-check"></i>
-                        </a>
-                    </li>
+                   
                     <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'consultation') !== false ? 'active' : ''; ?>" title="Consultations">
                         <a href="/medical/src/modules/dashboard/medical-staff/consultation.php">
                             <i class="fas fa-stethoscope"></i>
@@ -89,11 +85,7 @@
                             <i class="fas fa-robot"></i>
                         </a>
                     </li>
-                    <li class="<?php echo strpos($_SERVER['PHP_SELF'], 'history') !== false ? 'active' : ''; ?>" title="Medical History">
-                        <a href="/medical/src/modules/dashboard/patient/user/history.php">
-                            <i class="fas fa-history"></i>
-                        </a>
-                    </li>
+              
                 
                 <?php endif; ?>
             </ul>

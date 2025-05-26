@@ -199,15 +199,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                             </td>
                             <td>
                                 <div class="table-actions">
-                                    <button class="btn btn-primary view-consult-btn" data-consult='<?= json_encode($consult) ?>'>View</button>
+                                    <button class="btn btn-primary view-consult-btn" data-consult='<?= json_encode($consult) ?>'><i class="fas fa-eye"></i></button>
                                     <?php if ($consult['status'] === 'Scheduled'): ?>
-                                        <button class="btn btn-danger cancel-consult-btn" data-id="<?= $consult['consultation_id'] ?>">Cancel</button>
+                                        <button class="btn btn-danger cancel-consult-btn" data-id="<?= $consult['consultation_id'] ?>"><i class="fas fa-times-circle"></i></button>
                                     <?php endif; ?>
-                                    <form method="POST" action="" style="display:inline;">
-                                        <input type="hidden" name="action" value="delete_consultation">
-                                        <input type="hidden" name="consultation_id" value="<?= $consult['consultation_id'] ?>">
-                                        <button type="submit" class="btn btn-danger delete-consult-btn">Delete</button>
-                                    </form>
                                 </div>
                             </td>
                         </tr>

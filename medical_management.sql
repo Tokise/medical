@@ -374,7 +374,9 @@ CREATE TABLE `prescription_medications` (
   CONSTRAINT `prescription_medications_ibfk_2` FOREIGN KEY (`medication_id`) REFERENCES `medications` (`medication_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-
+ALTER TABLE prescription_medications ADD COLUMN patient_status ENUM('Pending', 'Completed', 'Stopped Early') NOT NULL DEFAULT 'Pending';
+ALTER TABLE prescription_medications ADD COLUMN patient_notes TEXT DEFAULT NULL; -- Optional: for patient to add comments
+ALTER TABLE prescription_medications ADD COLUMN patient_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
 ALTER TABLE prescription_medications ADD COLUMN medication_name VARCHAR(255) AFTER prescription_id;
 ALTER TABLE prescription_medications MODIFY COLUMN medication_id int(11) NULL;
 

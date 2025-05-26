@@ -29,7 +29,7 @@ if (!$prescription) {
     exit;
 }
 // Fetch medication details
-$sqlMed = "SELECT medication_name, dosage, duration, notes FROM prescription_medications WHERE prescription_id = ? LIMIT 1";
+$sqlMed = "SELECT id, medication_name, dosage, duration, notes, patient_status, patient_notes, patient_updated_at FROM prescription_medications WHERE prescription_id = ? LIMIT 1";
 $stmtMed = $conn->prepare($sqlMed);
 $stmtMed->bind_param('i', $prescription_id);
 $stmtMed->execute();

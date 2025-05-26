@@ -14,10 +14,11 @@ $prescriptionMedications = [];
 
 // 2) Fetch recent prescriptions
 try {
-    $prescriptionsQuery = "SELECT p.*, u.first_name, u.last_name, d.specialization 
+    $prescriptionsQuery = "SELECT p.*, u.first_name, u.last_name, d.specialization, pm.patient_status, pm.patient_updated_at
                           FROM prescriptions p
                           JOIN users u ON p.doctor_id = u.user_id
                           LEFT JOIN doctors d ON u.user_id = d.user_id
+                          JOIN prescription_medications pm ON p.prescription_id = pm.prescription_id
                           WHERE p.user_id = ? 
                           ORDER BY p.issue_date DESC";
     $prescriptionsStmt = $conn->prepare($prescriptionsQuery);
@@ -76,7 +77,8 @@ include_once '../../../../../includes/header.php';
                         <th>Date Issued</th>
                         <th>Prescription Details</th>
                         <th>Doctor</th>
-                        <th>Status</th>
+                        <th>Adherence Status</th>
+                        <th>Last Patient Update</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -105,13 +107,17 @@ include_once '../../../../../includes/header.php';
                                 </div>
                             </td>
                             <td>
-                                <span class="status-indicator <?= strtolower($prescription['status']) ?>"><?= htmlspecialchars($prescription['status']) ?></span>
+                                <span class="status-indicator <?= strtolower($prescription['patient_status'] ?? '') ?>"><?= htmlspecialchars($prescription['patient_status'] ?? 'N/A') ?></span>
+                            </td>
+                            <td>
+                                <?= htmlspecialchars($prescription['patient_updated_at'] ?? 'N/A') ?>
                             </td>
                             <td>
                                 <div class="table-actions">
-                                    <button class="btn btn-primary view-prescription-btn" data-id="<?= $prescription['prescription_id'] ?>">View</button>
-                                    <button class="btn btn-primary edit-prescription-btn" data-id="<?= $prescription['prescription_id'] ?>">Edit</button>
-                                    <button type="button" class="btn btn-danger delete-prescription-btn" data-id="<?= $prescription['prescription_id'] ?>">Delete</button>
+                                    <button class="btn btn-primary view-prescription-btn" data-id="<?= $prescription['prescription_id'] ?>"><i class="fas fa-eye"></i></button>
+                                    <?php if (!in_array($prescription['patient_status'], ['Completed', 'Stopped Early'])): ?>
+                                        <button class="btn btn-primary edit-prescription-btn" data-id="<?= $prescription['prescription_id'] ?>"><i class="fas fa-edit"></i></button>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -145,13 +151,23 @@ include_once '../../../../../includes/header.php';
     <h2>Edit Prescription</h2>
     <form id="editPrescriptionForm">
       <input type="hidden" name="prescription_id" id="edit_prescription_id">
+      <hr class="modal-divider" />
+      <h3>Your Adherence</h3>
+      <input type="hidden" name="prescription_medication_id" id="edit_prescription_medication_id">
       <div class="form-group">
-        <label>Status</label>
-        <select name="status" id="edit_status" required>
-          <option value="Active">Active</option>
+        <label for="edit_patient_status">Status</label>
+        <select name="patient_status" id="edit_patient_status" required>
+          <option value="Pending">Pending</option>
           <option value="Completed">Completed</option>
+          <option value="Stopped Early">Stopped Early</option>
         </select>
       </div>
+      <div class="form-group">
+        <label for="edit_patient_notes">Notes (Optional)</label>
+        <textarea name="patient_notes" id="edit_patient_notes"></textarea>
+      </div>
+      <!-- End Adherence Form -->
+
       <button type="submit" class="btn btn-primary">Update</button>
     </form>
   </div>
@@ -202,15 +218,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         Swal.fire('Error', data.error, 'error');
                         return;
                     }
-                    let html = `<strong>Date Issued:</strong> ${data.issue_date}<br>`;
-                    html += `<strong>Doctor:</strong> Dr. ${data.first_name} ${data.last_name} (${data.specialization || 'General'})<br>`;
-                    html += `<strong>Status:</strong> ${data.status}<br>`;
+                    // Display prescription details in view modal
+                    let html = '<strong>Date Issued:</strong> ' + data.issue_date + '<br>';
+                    html += '<strong>Doctor:</strong> Dr. ' + data.first_name + ' ' + data.last_name + ' (' + (data.specialization || 'General') + ')<br>';
+                    html += '<strong>Status:</strong> ' + data.status + '<br>';
+                    
                     if (data.medication) {
-                        html += `<strong>Medication:</strong> ${data.medication.medication_name}<br>`;
-                        html += `<strong>Dosage:</strong> ${data.medication.dosage}<br>`;
-                        html += `<strong>Duration:</strong> ${data.medication.duration}<br>`;
-                        html += `<strong>Intake:</strong> ${data.medication.notes || ''}<br>`;
+                        html += '<br><strong>Medication:</strong> ' + data.medication.medication_name + '<br>';
+                        html += '<strong>Dosage:</strong> ' + data.medication.dosage + '<br>';
+                        html += '<strong>Duration:</strong> ' + data.medication.duration + '<br>';
+                        html += '<strong>Intake:</strong> ' + (data.medication.notes || 'None') + '<br>';
+                        html += '<br><strong>Patient Adherence Status:</strong> ' + (data.medication.patient_status || 'Pending') + '<br>';
+                        html += '<strong>Patient Notes:</strong> ' + (data.medication.patient_notes || 'None') + '<br>';
+                        html += '<strong>Last Patient Update:</strong> ' + (data.medication.patient_updated_at || 'N/A') + '<br>';
+
                     }
+
                     document.getElementById('viewPrescriptionDetails').innerHTML = html;
                     viewModal.style.display = 'flex';
                 });
@@ -221,6 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target === viewModal) viewModal.style.display = 'none';
         if (e.target === editModal) editModal.style.display = 'none';
     };
+    
     // Edit Prescription
     const editModal = document.getElementById('editPrescriptionModal');
     const closeEditModal = document.getElementById('closeEditPrescriptionModal');
@@ -233,31 +257,52 @@ document.addEventListener('DOMContentLoaded', function() {
                         Swal.fire('Error', data.error, 'error');
                         return;
                     }
+                    // Populate the edit form with prescription details
                     document.getElementById('edit_prescription_id').value = data.prescription_id;
-                    document.getElementById('edit_status').value = data.status;
+                    // Populate adherence form fields
+                     if (data.medication) {
+                        document.getElementById('edit_prescription_medication_id').value = data.medication.id; // This should be the ID from prescription_medications
+                        document.getElementById('edit_patient_status').value = data.medication.patient_status || 'Pending';
+                        document.getElementById('edit_patient_notes').value = data.medication.patient_notes || '';
+                     } else {
+                         // Hide adherence form if no medication data
+                         document.getElementById('updateAdherenceForm').style.display = 'none';
+                     }
+                    
                     editModal.style.display = 'flex';
                 });
         };
     });
     closeEditModal.onclick = function() { editModal.style.display = 'none'; };
-    // Handle Edit Form Submit
+
+    // Handle Edit Form Submit (This form now handles both doctor status and patient adherence)
     document.getElementById('editPrescriptionForm').onsubmit = function(e) {
         e.preventDefault();
         const formData = new FormData(this);
-        formData.append('action', 'update_status');
-        fetch('actions/update_prescription.php', {
+        
+        // Determine which action to perform based on who is submitting (though in this file, it's always the patient)
+        // We'll assume this form is primarily for patient adherence updates now.
+        
+        fetch('actions/update_patient_medication_status.php', { // Pointing to the correct script
             method: 'POST',
             body: formData
         })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                Swal.fire('Updated', 'Prescription status updated!', 'success').then(() => location.reload());
+                Swal.fire('Updated', data.message || 'Status updated!', 'success').then(() => {
+                    location.reload(); // Reload the page on success
+                });
             } else {
-                Swal.fire('Error', data.error || 'Failed to update', 'error');
+                Swal.fire('Error', data.error || 'Failed to update status.', 'error');
             }
+        })
+        .catch(error => {
+            console.error('Error submitting update:', error);
+            Swal.fire('Error', 'An error occurred while submitting your update.', 'error');
         });
     };
+
 });
 </script>
 

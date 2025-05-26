@@ -107,7 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <title>Consultations - Medical Management</title>
     <link rel="stylesheet" href="../../../../src/styles/global.css">
     <link rel="stylesheet" href="../../../../src/styles/components.css">
-    <link rel="stylesheet" href="./styles/appointment.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
@@ -341,20 +340,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         <td><?= htmlspecialchars($c['notes']) ?></td>
                         <td><?= htmlspecialchars($c['consultation_status']) ?></td>
                         <td>
-                            <button type="button" class="btn btn-primary view-consultation-btn" data-id="<?= $c['consultation_id'] ?>">View</button>
+                            <button type="button" class="btn btn-primary view-consultation-btn" data-id="<?= $c['consultation_id'] ?>"><i class="fas fa-eye"></i></button>
                             <?php if ($c['consultation_status'] === 'Scheduled'): ?>
-                                <button type="button" class="btn btn-primary confirm-consultation-btn" data-id="<?= $c['consultation_id'] ?>">Confirm</button>
+                                <button type="button" class="btn btn-primary confirm-consultation-btn" data-id="<?= $c['consultation_id'] ?>"><i class="fas fa-check"></i></button>
                             <?php elseif ($c['consultation_status'] === 'Confirmed'): ?>
-                                <button type="button" class="btn btn-primary complete-consultation-btn" data-id="<?= $c['consultation_id'] ?>">Done</button>
+                                <button type="button" class="btn btn-primary complete-consultation-btn" data-id="<?= $c['consultation_id'] ?>"><i class="fas fa-clipboard-check"></i></button>
                             <?php endif; ?>
                             <?php if ($c['consultation_status'] !== 'Completed'): ?>
-                                <button type="button" class="btn btn-primary prescribe-btn" data-id="<?= $c['consultation_id'] ?>" data-patient="<?= htmlspecialchars($c['patient_name']) ?>" data-patientid="<?= $c['patient_id'] ?>">Prescribe</button>
+                                <button type="button" class="btn btn-primary prescribe-btn" data-id="<?= $c['consultation_id'] ?>" data-patient="<?= htmlspecialchars($c['patient_name']) ?>" data-patientid="<?= $c['patient_id'] ?>"><i class="fas fa-prescription"></i></button>
                             <?php endif; ?>
-                            <form method="POST" action="" style="display:inline;">
-                                <input type="hidden" name="action" value="delete_consultation">
-                                <input type="hidden" name="consultation_id" value="<?= $c['consultation_id'] ?>">
-                                <button type="submit" class="btn btn-danger delete-consultation-btn">Delete</button>
-                            </form>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -442,14 +436,59 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeConsultationModal = document.getElementById('closeConsultationModal');
     const closePrescriptionModal = document.getElementById('closePrescriptionModal');
 
+    // Function to open and populate the consultation modal for viewing
+    function openConsultationModal(type, data = {}) {
+        const modalTitle = document.getElementById('consultationModalTitle');
+        const consultationForm = document.getElementById('consultationForm');
+        const consultationSubmitBtn = document.getElementById('consultationSubmitBtn');
+        const modalContent = consultationModal.querySelector('.modal-content');
+
+        // Configure modal for viewing
+        modalTitle.textContent = 'Consultation Details';
+        consultationForm.style.display = 'none'; // Hide the form
+        consultationSubmitBtn.style.display = 'none'; // Hide submit button
+
+        // Remove any previously added view-only details
+        let existingViewDetails = modalContent.querySelector('#consultationViewDetails');
+        if (existingViewDetails) {
+            existingViewDetails.remove();
+        }
+
+        // Create a new div for displaying view-only details
+        const viewDetailsDiv = document.createElement('div');
+        viewDetailsDiv.id = 'consultationViewDetails';
+        // Keep it empty initially, populate after fetch
+
+        // Insert the new div into the modal content
+        // We'll insert it after the modal title and the horizontal rule
+        const modalDivider = modalContent.querySelector('.modal-divider');
+        if (modalDivider) {
+            modalDivider.insertAdjacentElement('afterend', viewDetailsDiv);
+        } else {
+            // Fallback if divider not found, append to modal content
+             modalContent.appendChild(viewDetailsDiv);
+        }
+
+        // Show the modal with a loading indicator
+        viewDetailsDiv.innerHTML = '<p>Loading consultation details...</p>';
+        consultationModal.style.display = 'flex';
+    }
+
     // View consultation functionality
     document.querySelectorAll('.view-consultation-btn').forEach(btn => {
         btn.onclick = function() {
             const consultationId = btn.dataset.id;
-            fetch(`get_consultation.php?id=${consultationId}`)
+
+            // Open modal with loading state
+            openConsultationModal('view', {}); // Call with empty data to show loading
+
+            fetch('./actions/get_consultation.php?id=' + consultationId)
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Fetched consultation data:', data); // Temporary log
+                    const viewDetailsDiv = document.getElementById('consultationViewDetails');
                     if (data.error) {
+                         viewDetailsDiv.innerHTML = '<p style="color: red;">Error loading details: ' + data.error + '</p>';
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
@@ -457,16 +496,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         return;
                     }
-                    openConsultationModal('view', {
-                        id: data.consultation_id,
-                        patient: data.patient_name,
-                        date: data.consultation_date,
-                        notes: data.notes,
-                        status: data.status
-                    });
+                    
+                    // Populate the view details div with fetched data
+                    viewDetailsDiv.innerHTML = `
+                        <div class="form-group"><label>Patient:</label> <p>${data.patient_name || 'N/A'}</p></div>
+                        <div class="form-group"><label>Date:</label> <p>${data.consultation_date ? new Date(data.consultation_date).toLocaleDateString() : 'N/A'}</p></div>
+                        <div class="form-group"><label>Consultation Type:</label> <p>${data.consultation_type_name || 'N/A'}</p></div>
+                        <div class="form-group"><label>Reason:</label> <p>${data.reason || 'N/A'}</p></div>
+                        <div class="form-group"><label>Symptoms:</label> <p>${data.symptoms || 'N/A'}</p></div>
+                        <div class="form-group"><label>Diagnosis:</label> <p>${data.diagnosis || 'N/A'}</p></div>
+                        <div class="form-group"><label>Notes:</label> <p>${data.notes || 'N/A'}</p></div>
+                        <div class="form-group"><label>Status:</label> <p>${data.status || 'N/A'}</p></div>
+                        ${data.treatment ? `<div class="form-group"><label>Treatment:</label> <p>${data.treatment}</p></div>` : ''}
+                        ${data.follow_up_date ? `<div class="form-group"><label>Follow-up Date:</label> <p>${data.follow_up_date}</p></div>` : ''}
+                    `;
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    const viewDetailsDiv = document.getElementById('consultationViewDetails');
+                    if (viewDetailsDiv) {
+                         viewDetailsDiv.innerHTML = '<p style="color: red;">Failed to load consultation details.</p>';
+                    }
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
@@ -560,32 +610,6 @@ document.addEventListener('DOMContentLoaded', function() {
             prescriptionModal.style.display = 'none';
         }
     };
-
-    // Delete consultation functionality
-    document.querySelectorAll('.delete-consultation-btn').forEach(btn => {
-        btn.onclick = function(e) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'Delete Consultation',
-                text: 'Are you sure you want to delete this consultation?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, delete it',
-                cancelButtonText: 'No, cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.innerHTML = `
-                        <input type="hidden" name="action" value="delete_consultation">
-                        <input type="hidden" name="consultation_id" value="${btn.dataset.id}">
-                    `;
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
-        };
-    });
 
     // Success/Error messages
     <?php if (isset($_GET['success']) && $_GET['success'] === '1'): ?>

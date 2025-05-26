@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['doctor', 'nur
     exit();
 }
 
-$user_id = $_SESSION['id'];
+$user_id = $_SESSION['user_id'];
 $fullname = ($_SESSION['first_name'] ?? '') . ' ' . ($_SESSION['last_name'] ?? '');
 
 // Handle add/edit/delete prescription
@@ -87,14 +87,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_medication'])) {
 
 // Fetch prescriptions for this doctor
 $prescriptions = [];
-$sql = "SELECT p.*, CONCAT(u.first_name, ' ', u.last_name) as patient_name, 
-       m.name as medication_name, pm.dosage, pm.duration, pm.notes as intake_instructions
-       FROM prescriptions p 
-       JOIN users u ON p.user_id = u.user_id 
-       JOIN prescription_medications pm ON p.prescription_id = pm.prescription_id
-       JOIN medications m ON pm.medication_id = m.medication_id
-       WHERE p.doctor_id = ? 
-       ORDER BY p.issue_date DESC";
+$sql = "SELECT pm.id as prescription_medication_id, p.*, CONCAT(u.first_name, ' ', u.last_name) as patient_name,
+       COALESCE(pm.medication_name, m.name) as medication_name, pm.dosage, pm.duration, pm.notes as intake_instructions,
+       pm.patient_status, pm.patient_updated_at
+       FROM prescription_medications pm
+       JOIN prescriptions p ON pm.prescription_id = p.prescription_id
+       JOIN users u ON p.user_id = u.user_id
+       LEFT JOIN medications m ON pm.medication_id = m.medication_id
+       WHERE p.doctor_id = ?
+       ORDER BY p.issue_date DESC, pm.id ASC";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -191,6 +192,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             font-size: 0.95rem;
             border: none;
             cursor: pointer;
+            text-decoration: none;
         }
 
         .btn-primary {
@@ -211,6 +213,22 @@ while ($row = mysqli_fetch_assoc($result)) {
         .btn-danger:hover {
             background: var(--danger-color-dark);
             transform: translateY(-2px);
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        .btn.icon-only {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 1.1rem;
+        }
+
+        .btn.icon-only i {
+            margin-right: 0;
         }
 
         .modal {
@@ -354,6 +372,8 @@ while ($row = mysqli_fetch_assoc($result)) {
                         <th>Intake Instructions</th>
                         <th>Issue Date</th>
                         <th>Status</th>
+                        <th>Patient Status</th>
+                        <th>Last Patient Update</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -361,20 +381,20 @@ while ($row = mysqli_fetch_assoc($result)) {
                     <?php foreach ($prescriptions as $p): ?>
                     <tr>
                         <td><?= htmlspecialchars($p['patient_name']) ?></td>
-                        <td><?= htmlspecialchars($p['medication_name']) ?></td>
-                        <td><?= htmlspecialchars($p['dosage']) ?></td>
-                        <td><?= htmlspecialchars($p['duration']) ?></td>
-                        <td><?= htmlspecialchars($p['intake_instructions']) ?></td>
+                        <td><?= htmlspecialchars($p['medication_name'] ?? 'N/A') ?></td>
+                        <td><?= htmlspecialchars($p['dosage'] ?? 'N/A') ?></td>
+                        <td><?= htmlspecialchars($p['duration'] ?? 'N/A') ?></td>
+                        <td><?= htmlspecialchars($p['intake_instructions'] ?? 'N/A') ?></td>
                         <td><?= htmlspecialchars($p['issue_date']) ?></td>
                         <td><?= htmlspecialchars($p['status']) ?></td>
+                        <td><?= htmlspecialchars($p['patient_status']) ?></td>
+                        <td><?= htmlspecialchars($p['patient_updated_at']) ?></td>
                         <td>
-                            <button type="button" class="btn btn-primary view-prescription-btn" data-id="<?= $p['prescription_id'] ?>">View</button>
-                            <button type="button" class="btn btn-primary edit-prescription-btn" data-id="<?= $p['prescription_id'] ?>">Edit</button>
-                            <form method="POST" action="" style="display:inline;">
-                                <input type="hidden" name="action" value="delete_prescription">
-                                <input type="hidden" name="prescription_id" value="<?= $p['prescription_id'] ?>">
-                                <button type="submit" class="btn btn-danger delete-prescription-btn">Delete</button>
-                            </form>
+                            <button type="button" class="btn btn-primary icon-only view-prescription-btn" data-id="<?= $p['prescription_medication_id'] ?>"><i class="fas fa-eye"></i></button>
+                            <?php if (!in_array($p['status'], ['Completed', 'Expired'])): ?>
+                                <button type="button" class="btn btn-primary icon-only edit-prescription-btn" data-id="<?= $p['prescription_medication_id'] ?>"><i class="fas fa-edit"></i></button>
+                            <?php endif; ?>
+                          
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -428,7 +448,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 </select>
             </div>
             
-            <button type="submit" class="btn btn-primary" id="prescriptionSubmitBtn">Update</button>
+            <button type="submit" class="btn btn-primary" id="prescriptionSubmitBtn"><i class="fas fa-save"></i> Update</button>
         </form>
     </div>
 </div>
@@ -520,6 +540,27 @@ document.querySelectorAll('.delete-prescription-btn').forEach(btn => {
 <?php if (isset($_GET['med_error'])): ?>
     Swal.fire({icon:'error',title:'Error',text:'There was an error adding the medication.'});
 <?php endif; ?>
+
+// Get the modal
+const prescriptionModal = document.getElementById('prescriptionModal');
+
+// Get the button that opens the modal
+// (Assuming you have buttons that open this modal, e.g., edit/view buttons)
+
+// Get the <span> element that closes the modal
+const closePrescriptionModal = document.getElementById('closePrescriptionModal');
+
+// When the user clicks on <span> (x), close the modal
+closePrescriptionModal.onclick = function() {
+  prescriptionModal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == prescriptionModal) {
+    prescriptionModal.style.display = "none";
+  }
+}
 </script>
 </body>
 </html> 

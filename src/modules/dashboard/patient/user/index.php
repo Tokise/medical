@@ -46,10 +46,11 @@ $allergies = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Get recent prescriptions
 $stmt = $conn->prepare("
-    SELECT p.*, u.first_name, u.last_name, d.specialization
+    SELECT p.*, u.first_name, u.last_name, d.specialization, pm.patient_status, pm.patient_updated_at
     FROM prescriptions p
     JOIN users u ON p.doctor_id = u.user_id
     LEFT JOIN doctors d ON u.user_id = d.user_id
+    JOIN prescription_medications pm ON p.prescription_id = pm.prescription_id
     WHERE p.user_id = ?
     ORDER BY p.created_at DESC
     LIMIT 5
@@ -265,7 +266,7 @@ $role = $_SESSION['role'];
                 <div class="prescriptions-section">
                     <div class="section-header">
                         <h2 class="section-title">Recent Prescriptions</h2>
-                        <a href="/medical/src/modules/dashboard/patient/student/prescription.php" class="btn btn-primary">View All</a>
+                        <a href="/medical/src/modules/dashboard/patient/user/prescription.php" class="btn btn-primary">View All</a>
                     </div>
                     <div class="prescriptions-list">
                         <?php if (!empty($prescriptions)): ?>
@@ -278,8 +279,9 @@ $role = $_SESSION['role'];
                                     <div class="prescription-content">
                                         <div class="prescription-title"><?= htmlspecialchars($prescription['diagnosis'] ?? 'Prescription') ?></div>
                                         <div class="prescription-doctor">Dr. <?= htmlspecialchars($prescription['first_name'] . ' ' . $prescription['last_name']) ?><?= isset($prescription['specialization']) ? ' (' . htmlspecialchars($prescription['specialization']) . ')' : '' ?></div>
+                                        <div class="specialization"><?= htmlspecialchars($prescription['specialization'] ?? 'General Medicine') ?></div>
                                     </div>
-                                    <div class="prescription-status <?= strtolower($prescription['status']) ?>"><?= $prescription['status'] ?></div>
+                                    <span class="status-indicator <?= strtolower($prescription['patient_status'] ?? '') ?>"><?= htmlspecialchars($prescription['patient_status'] ?? 'N/A') ?></span>
                                 </div>
                             <?php endforeach; ?>
                         <?php else: ?>
